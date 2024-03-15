@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="generator" content="quarto-1.5.24">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+    <title>Integrative Analysis with TCGA Data</title>
+    <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      div.columns{display: flex; gap: min(4vw, 1.5em);}
+      div.column{flex: auto; overflow-x: auto;}
+      div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+      ul.task-list{list-style: none;}
+      ul.task-list li input[type="checkbox"] {
+        width: 0.8em;
+        margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+        vertical-align: middle;
+      }
+      /* CSS for syntax highlighting */
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+        }
+      pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+      div.sourceCode
+        {   }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+    </style>
+
+    <style>
+      body.hypothesis-enabled #quarto-embed-header {
+        padding-right: 36px;
+      }
+
+      #quarto-embed-header {
+        height: 3em;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: solid 1px;
+      }
+
+      #quarto-embed-header h6 {
+        font-size: 1.1em;
+        padding-top: 0.6em;
+        margin-left: 1em;
+        margin-right: 1em;
+        font-weight: 400;
+      }
+
+      #quarto-embed-header a.quarto-back-link,
+      #quarto-embed-header a.quarto-download-embed {
+        font-size: 0.8em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        margin-left: 1em;
+        margin-right: 1em;
+      }
+
+      .quarto-back-container {
+        padding-left: 0.5em;
+        display: flex;
+      }
+
+      .headroom {
+          will-change: transform;
+          transition: transform 200ms linear;
+      }
+
+      .headroom--pinned {
+          transform: translateY(0%);
+      }
+
+      .headroom--unpinned {
+          transform: translateY(-100%);
+      }      
+    </style>
+
+    <script>
+    window.document.addEventListener("DOMContentLoaded", function () {
+
+      var header = window.document.querySelector("#quarto-embed-header");
+      const titleBannerEl = window.document.querySelector("body > #title-block-header");
+      if (titleBannerEl) {
+        titleBannerEl.style.paddingTop = header.clientHeight + "px";
+      }
+      const contentEl = window.document.getElementById('quarto-content');
+      for (const child of contentEl.children) {
+        child.style.paddingTop = header.clientHeight + "px";
+        child.style.marginTop = "1em";
+      }
+
+      // Use the article root if the `back` call doesn't work. This isn't perfect
+      // but should typically work
+      window.quartoBackToArticle = () => {
+        var currentUrl = window.location.href;
+        window.history.back();
+        setTimeout(() => {
+            // if location was not changed in 100 ms, then there is no history back
+            if(currentUrl === window.location.href){              
+                // redirect to site root
+                window.location.href = "../index.html";
+            }
+        }, 100);
+      }
+
+      const headroom = new window.Headroom(header, {
+        tolerance: 5,
+        onPin: function () {
+        },
+        onUnpin: function () {
+        },
+      });
+      headroom.init();
+    });
+    </script>
+
+    
+<script src="../site_libs/manuscript-notebook/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+     <style>html{ scroll-behavior: smooth; }</style>  <script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>  
+      </head>
+
+  <body class="quarto-notebook">
+    <div id="quarto-embed-header" class="headroom fixed-top bg-primary">
+      
+      <a onclick="window.quartoBackToArticle(); return false;" class="btn btn-primary quarto-back-link" href=""><i class="bi bi-caret-left"></i> Back to Article</a>
+      <h6><i class="bi bi-journal-code"></i> Integrative Analysis with TCGA Data</h6>
+
+            <a href="../notebooks/TCGA.qmd" class="btn btn-primary quarto-download-embed" download="TCGA.qmd">Download Source</a>
+          </div>
+
+     <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Integrative Analysis with TCGA Data</h1>
+            <p class="subtitle lead">Analysis of Mutation Data from The Cancer Genome Atlas (TCGA)</p>
+          </div>
+
+    
+    <div class="quarto-title-meta-container">
+      <div class="quarto-title-meta-column-start">
+        
+        <div class="quarto-title-meta">
+
+                
+          
+                
+              </div>
+      </div>
+      <div class="quarto-title-meta-column-end quarto-other-formats-target">
+      </div>
+    </div>
+
+
+
+    <div class="quarto-other-links-text-target">
+    </div>  </div>
+</header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#intro" id="toc-intro" class="nav-link active" data-scroll-target="#intro">Intro</a></li>
+  <li><a href="#analyzing-mutation-data" id="toc-analyzing-mutation-data" class="nav-link" data-scroll-target="#analyzing-mutation-data">Analyzing Mutation Data</a></li>
+  <li><a href="#linking-mutations-and-tumor-stage" id="toc-linking-mutations-and-tumor-stage" class="nav-link" data-scroll-target="#linking-mutations-and-tumor-stage">Linking mutations and tumor stage</a></li>
+  <li><a href="#linking-expression-and-tumor-stage" id="toc-linking-expression-and-tumor-stage" class="nav-link" data-scroll-target="#linking-expression-and-tumor-stage">Linking expression and tumor stage</a></li>
+  <li><a href="#linking-methylation-and-expression" id="toc-linking-methylation-and-expression" class="nav-link" data-scroll-target="#linking-methylation-and-expression">Linking methylation and expression</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">      
+
+       <div class="cell-container code-fold"><div class="cell-decorator"><pre>In [1]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'knitr' was built under R version 4.3.2</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">warning =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">message =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">dpi =</span> <span class="dv">180</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">fig.width =</span> <span class="dv">15</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">fig.height =</span> <span class="dv">8</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">echo =</span> <span class="cn">TRUE</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'tidyr' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'readr' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'purrr' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'dplyr' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'stringr' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'lubridate' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.0     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></div>
+<section id="intro" class="level2">
+<h2 class="anchored" data-anchor-id="intro">Intro</h2>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [2]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(curatedTCGAData)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: MultiAssayExperiment</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'MultiAssayExperiment' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: SummarizedExperiment</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'SummarizedExperiment' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: MatrixGenerics</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'MatrixGenerics' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: matrixStats</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'matrixStats' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'matrixStats'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:dplyr':
+
+    count</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'MatrixGenerics'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:matrixStats':
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+    colWeightedMeans, colWeightedMedians, colWeightedSds,
+    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: GenomicRanges</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: stats4</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: BiocGenerics</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'BiocGenerics' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'BiocGenerics'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:lubridate':
+
+    intersect, setdiff, union</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:dplyr':
+
+    combine, intersect, setdiff, union</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+    Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which.max, which.min</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: S4Vectors</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'S4Vectors'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:lubridate':
+
+    second, second&lt;-</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:dplyr':
+
+    first, rename</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:tidyr':
+
+    expand</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:utils':
+
+    findMatches</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    expand.grid, I, unname</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: IRanges</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'IRanges'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:lubridate':
+
+    %within%</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:dplyr':
+
+    collapse, desc, slice</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:purrr':
+
+    reduce</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:grDevices':
+
+    windows</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: GenomeInfoDb</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'GenomeInfoDb' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: Biobase</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'Biobase'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:MatrixGenerics':
+
+    rowMedians</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:matrixStats':
+
+    anyMissing, rowMedians</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(TCGAutils)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'TCGAutils' was built under R version 4.3.2</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MultiAssayExperiment)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></div>
+<p>Download the data</p>
+<p>A complete list of disease codes used by the TCGA project are available on the <a href="https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations">NCI Genomic Data Commons website</a>.</p>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [3]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>readData <span class="ot">=</span> <span class="fu">curatedTCGAData</span>(<span class="st">"READ"</span>, </span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"RNASeq2GeneNorm"</span>, <span class="st">"Mutation"</span>, <span class="st">"Methylation_methyl450"</span>), </span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">dry.run =</span> <span class="cn">FALSE</span>, <span class="at">version =</span> <span class="st">"2.1.1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Working on: READ_Mutation-20160128</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>require("RaggedExperiment")</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'RaggedExperiment' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Working on: READ_RNASeq2GeneNorm-20160128</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Working on: READ_Methylation_methyl450-20160128</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>require("rhdf5")</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'rhdf5' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: HDF5Array</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'HDF5Array' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: DelayedArray</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'DelayedArray' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: Matrix</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'Matrix' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'Matrix'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:S4Vectors':
+
+    expand</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:tidyr':
+
+    expand, pack, unpack</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: S4Arrays</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'S4Arrays' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: abind</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'S4Arrays'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:abind':
+
+    abind</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:base':
+
+    rowsum</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: SparseArray</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'SparseArray' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'DelayedArray'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:purrr':
+
+    simplify</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    apply, scale, sweep</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'HDF5Array'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:rhdf5':
+
+    h5ls</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Working on: READ_colData-20160128</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Working on: READ_sampleMap-20160128</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Working on: READ_metadata-20160128</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>see ?curatedTCGAData and browseVignettes('curatedTCGAData') for documentation</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>loading from cache</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>harmonizing input:
+  removing 1903 sampleMap rows not in names(experiments)
+  removing 2 colData rownames not in sampleMap 'primary'</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a>readData</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>A MultiAssayExperiment object of 3 listed
+ experiments with user-defined names and respective classes.
+ Containing an ExperimentList class object of length 3:
+ [1] READ_Mutation-20160128: RaggedExperiment with 22075 rows and 69 columns
+ [2] READ_RNASeq2GeneNorm-20160128: SummarizedExperiment with 18115 rows and 177 columns
+ [3] READ_Methylation_methyl450-20160128: SummarizedExperiment with 485577 rows and 106 columns
+Functionality:
+ experiments() - obtain the ExperimentList instance
+ colData() - the primary/phenotype DataFrame
+ sampleMap() - the sample coordination DataFrame
+ `$`, `[`, `[[` - extract colData columns, subset, or experiment
+ *Format() - convert into a long or wide DataFrame
+ assays() - convert ExperimentList to a SimpleList of matrices
+ exportClass() - save data to flat files</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [4]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sampleMap</span>(readData)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 352 rows and 3 columns
+                                  assay      primary                colname
+                               &lt;factor&gt;  &lt;character&gt;            &lt;character&gt;
+1   READ_Methylation_methyl450-20160128 TCGA-AF-2687 TCGA-AF-2687-01A-02D..
+2   READ_Methylation_methyl450-20160128 TCGA-AF-2690 TCGA-AF-2690-01A-02D..
+3   READ_Methylation_methyl450-20160128 TCGA-AF-2693 TCGA-AF-2693-01A-02D..
+4   READ_Methylation_methyl450-20160128 TCGA-AF-3911 TCGA-AF-3911-01A-01D..
+5   READ_Methylation_methyl450-20160128 TCGA-AF-4110 TCGA-AF-4110-01A-02D..
+...                                 ...          ...                    ...
+348       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A02G        TCGA-AG-A02G-01
+349       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A02N        TCGA-AG-A02N-01
+350       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A02X        TCGA-AG-A02X-01
+351       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A032        TCGA-AG-A032-01
+352       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A036        TCGA-AG-A036-01</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [5]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sampleMap</span>(readData) <span class="sc">|&gt;</span> </span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(primary) <span class="sc">|&gt;</span> </span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  1   2   3   4 
+  5 147   7   8 </code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [6]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>clin <span class="ot">=</span> <span class="fu">colData</span>(readData) <span class="sc">|&gt;</span> </span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>()</span>
+<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(clin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  167 2260</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">colnames</span>(clin), <span class="dv">10</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "patientID"             "years_to_birth"        "vital_status"         
+ [4] "days_to_death"         "days_to_last_followup" "tumor_tissue_site"    
+ [7] "pathologic_stage"      "pathology_T_stage"     "pathology_N_stage"    
+[10] "pathology_M_stage"    </code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [7]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>clin <span class="sc">|&gt;</span> </span>
+<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(pathology_T_stage) <span class="sc">|&gt;</span> </span>
+<span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ t1  t2  t3  t4 t4a t4b 
+  9  28 114   5   8   1 </code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [8]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>clin <span class="ot">&lt;-</span> clin <span class="sc">|&gt;</span> </span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">t_stage =</span> <span class="fu">case_when</span>(</span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>    pathology_T_stage <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"t4"</span>,<span class="st">"t4a"</span>,<span class="st">"t4b"</span>) <span class="sc">~</span> <span class="st">"t4"</span>,</span>
+<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> pathology_T_stage</span>
+<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb118-6"><a href="#cb118-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb118-7"><a href="#cb118-7" aria-hidden="true" tabindex="-1"></a>clin<span class="sc">$</span>t_stage <span class="sc">|&gt;</span> </span>
+<span id="cb118-8"><a href="#cb118-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ t1  t2  t3  t4 
+  9  28 114  14 </code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [9]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>clin<span class="sc">$</span>vital_status <span class="sc">|&gt;</span> </span>
+<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  0   1 
+139  28 </code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [10]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb122"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(clin<span class="sc">$</span>t_stage, clin<span class="sc">$</span>vital_status)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    
+      0  1
+  t1  9  0
+  t2 24  4
+  t3 96 18
+  t4  9  5</code></pre>
+</div>
+</div></div>
+</section>
+<section id="analyzing-mutation-data" class="level1">
+<h1>Analyzing Mutation Data</h1>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [11]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>mut_data <span class="ot">=</span> readData[[<span class="dv">1</span>]]</span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>mut_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>class: RaggedExperiment 
+dim: 22075 69 
+assays(34): Hugo_Symbol Entrez_Gene_Id ... COSMIC_Gene Drug_Target
+rownames: NULL
+colnames(69): TCGA-AF-2689-01A-01W-0831-10 TCGA-AF-2691-01A-01W-0831-10
+  ... TCGA-AG-A032-01 TCGA-AG-A036-01
+colData names(0):</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [12]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>mut_sample_ids <span class="ot">=</span> <span class="fu">colnames</span>(mut_data)</span>
+<span id="cb126-2"><a href="#cb126-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mut_sample_ids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "TCGA-AF-2689-01A-01W-0831-10" "TCGA-AF-2691-01A-01W-0831-10"
+[3] "TCGA-AF-2692-01A-01W-0831-10" "TCGA-AF-3400-01A-01W-0831-10"
+[5] "TCGA-AF-3913-01"              "TCGA-AG-3574-01A-01W-0831-10"</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(clin<span class="sc">$</span>patientID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "TCGA-AF-2687" "TCGA-AF-2689" "TCGA-AF-2690" "TCGA-AF-2691" "TCGA-AF-2692"
+[6] "TCGA-AF-2693"</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [13]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>mut_sample_ids <span class="ot">&lt;-</span> mut_sample_ids <span class="sc">|&gt;</span> </span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>  stringr<span class="sc">::</span><span class="fu">str_sub</span>(<span class="dv">1</span>,<span class="dv">12</span>)</span>
+<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb130-4"><a href="#cb130-4" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(mut_sample_ids <span class="sc">%in%</span> clin<span class="sc">$</span>patientID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [14]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(mut_data)[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                      TCGA-AF-2689-01A-01W-0831-10 TCGA-AF-2691-01A-01W-0831-10
+X:54241715-54241716:+ "WNK3"                       NA                          
+7:111899511:+         "IFRD1"                      NA                          
+7:113309556:+         "PPP1R3A"                    NA                          
+                      TCGA-AF-2692-01A-01W-0831-10
+X:54241715-54241716:+ NA                          
+7:111899511:+         NA                          
+7:113309556:+         NA                          </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb134"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Is a sparse matrix</span></span>
+<span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb134-3"><a href="#cb134-3" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(mut_data)[<span class="dv">1</span>,] <span class="sc">|&gt;</span> </span>
+<span id="cb134-4"><a href="#cb134-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(<span class="at">useNA=</span><span class="st">"ifany"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+WNK3 &lt;NA&gt; 
+   1   68 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb136"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a>mut_assay <span class="ot">=</span> mut_data<span class="sc">@</span>assays</span>
+<span id="cb136-2"><a href="#cb136-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb136-3"><a href="#cb136-3" aria-hidden="true" tabindex="-1"></a>mut_assay</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>GRangesList object of length 69:
+$`TCGA-AF-2689-01A-01W-0831-10`
+GRanges object with 64 ranges and 34 metadata columns:
+       seqnames            ranges strand | Hugo_Symbol Entrez_Gene_Id
+          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;    &lt;character&gt;
+   [1]        X 54241715-54241716      + |        WNK3          65267
+   [2]        7         111899511      + |       IFRD1           3475
+   [3]        7         113309556      + |     PPP1R3A           5506
+   [4]        7         128146325      + |     FAM71F1          84691
+   [5]        7         156447624      + |        NOM1          64434
+   ...      ...               ...    ... .         ...            ...
+  [60]       10          50616059      + |       OGDHL          55753
+  [61]       10          96343335      + |       HELLS           3070
+  [62]        5         139173166      + |        PSD2          84249
+  [63]        5         147800932      + |      FBXO38          81545
+  [64]        5          54365356      + |        GZMK           3003
+             Center  NCBI_Build Variant_Classification Variant_Type
+        &lt;character&gt; &lt;character&gt;            &lt;character&gt;  &lt;character&gt;
+   [1] hgsc.bcm.edu          36        Frame_Shift_Ins          INS
+   [2] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [3] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [4] hgsc.bcm.edu          36                 Silent          SNP
+   [5] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   ...          ...         ...                    ...          ...
+  [60] hgsc.bcm.edu          36                 Silent          SNP
+  [61] hgsc.bcm.edu          36                 Silent          SNP
+  [62] hgsc.bcm.edu          36      Nonsense_Mutation          SNP
+  [63] hgsc.bcm.edu          36                 Silent          SNP
+  [64] hgsc.bcm.edu          36      Missense_Mutation          SNP
+       Reference_Allele Tumor_Seq_Allele1 Tumor_Seq_Allele2    dbSNP_RS
+            &lt;character&gt;       &lt;character&gt;       &lt;character&gt; &lt;character&gt;
+   [1]                -                 -                 T       novel
+   [2]                A                 A                 G       novel
+   [3]                T                 T                 C       novel
+   [4]                G                 G                 A       novel
+   [5]                A                 A                 G       novel
+   ...              ...               ...               ...         ...
+  [60]                G                 G                 A       novel
+  [61]                T                 T                 C       novel
+  [62]                C                 C                 T       novel
+  [63]                G                 G                 A       novel
+  [64]                T                 T                 A       novel
+       dbSNP_Val_Status Matched_Norm_Sample_Barcode Match_Norm_Seq_Allele1
+            &lt;character&gt;                 &lt;character&gt;            &lt;character&gt;
+   [1]          unknown      TCGA-AF-2689-10A-01W..                      -
+   [2]          unknown      TCGA-AF-2689-10A-01W..                      A
+   [3]          unknown      TCGA-AF-2689-10A-01W..                      T
+   [4]          unknown      TCGA-AF-2689-10A-01W..                      G
+   [5]          unknown      TCGA-AF-2689-10A-01W..                      A
+   ...              ...                         ...                    ...
+  [60]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [61]          unknown      TCGA-AF-2689-10A-01W..                      T
+  [62]          unknown      TCGA-AF-2689-10A-01W..                      C
+  [63]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [64]          unknown      TCGA-AF-2689-10A-01W..                      T
+       Match_Norm_Seq_Allele2 Tumor_Validation_Allele1 Tumor_Validation_Allele2
+                  &lt;character&gt;              &lt;character&gt;              &lt;character&gt;
+   [1]                      -                        -                        T
+   [2]                      A                        A                        G
+   [3]                      T                        T                        C
+   [4]                      G                        .                        .
+   [5]                      A                        A                        G
+   ...                    ...                      ...                      ...
+  [60]                      G                        .                        .
+  [61]                      T                        .                        .
+  [62]                      C                        C                        T
+  [63]                      G                        G                        A
+  [64]                      T                        T                        A
+       Match_Norm_Validation_Allele1 Match_Norm_Validation_Allele2
+                         &lt;character&gt;                   &lt;character&gt;
+   [1]                             -                             -
+   [2]                             A                             A
+   [3]                             T                             T
+   [4]                             .                             .
+   [5]                             A                             A
+   ...                           ...                           ...
+  [60]                             .                             .
+  [61]                             .                             .
+  [62]                             C                             C
+  [63]                             G                             G
+  [64]                             T                             T
+       Verification_Status Validation_Status Mutation_Status Sequencing_Phase
+               &lt;character&gt;       &lt;character&gt;     &lt;character&gt;      &lt;character&gt;
+   [1]             Unknown             Valid         Somatic          Phase_I
+   [2]             Unknown             Valid         Somatic          Phase_I
+   [3]             Unknown             Valid         Somatic          Phase_I
+   [4]             Unknown           Unknown         Somatic          Phase_I
+   [5]             Unknown             Valid         Somatic          Phase_I
+   ...                 ...               ...             ...              ...
+  [60]             Unknown           Unknown         Somatic          Phase_I
+  [61]             Unknown           Unknown         Somatic          Phase_I
+  [62]             Unknown             Valid         Somatic          Phase_I
+  [63]             Unknown             Valid         Somatic          Phase_I
+  [64]             Unknown             Valid         Somatic          Phase_I
+       Sequence_Source Validation_Method       Score    BAM_file   Sequencer
+           &lt;character&gt;       &lt;character&gt; &lt;character&gt; &lt;character&gt; &lt;character&gt;
+   [1]         Capture               454                               SOLID
+   [2]         Capture               454                               SOLID
+   [3]         Capture               454                               SOLID
+   [4]         Capture                 .                               SOLID
+   [5]         Capture               454                               SOLID
+   ...             ...               ...         ...         ...         ...
+  [60]         Capture                 .                               SOLID
+  [61]         Capture                 .                               SOLID
+  [62]         Capture               454                               SOLID
+  [63]         Capture               454                               SOLID
+  [64]         Capture               454                               SOLID
+       TranscriptID        Exon     ChromChange    AAChange COSMIC_Codon
+        &lt;character&gt; &lt;character&gt;     &lt;character&gt; &lt;character&gt;  &lt;character&gt;
+   [1] NM_001002838      exon23 c.4999_5000insA   p.L1667fs            .
+   [2]    NM_001550      exon10        c.A1043G     p.E348G            .
+   [3]    NM_002711       exon2         c.A838G     p.T280A            .
+   [4]    NM_032599       exon3         c.G639A     p.T213T            .
+   [5]    NM_138400       exon5        c.A1651G     p.T551A            .
+   ...          ...         ...             ...         ...          ...
+  [60] NM_001143996      exon18        c.C2286T     p.S762S            .
+  [61]    NM_018063      exon18        c.T2061C     p.D687D            .
+  [62]    NM_032289       exon3         c.C460T     p.Q154X            .
+  [63]    NM_205836      exon21        c.G3327A    p.R1109R            .
+  [64]    NM_002104       exon5         c.T640A     p.S214T            .
+       COSMIC_Gene Drug_Target
+       &lt;character&gt; &lt;character&gt;
+   [1]           .           .
+   [2]           .           .
+   [3]           .           .
+   [4]           .           .
+   [5]           .           .
+   ...         ...         ...
+  [60]           .           .
+  [61]           .           .
+  [62]           .           .
+  [63]           .           .
+  [64]           .           .
+  -------
+  seqinfo: 24 sequences from NCBI36 genome; no seqlengths
+
+...
+&lt;68 more elements&gt;</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb138"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a>mut_assay <span class="sc">|&gt;</span> <span class="fu">class</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CompressedGRangesList"
+attr(,"package")
+[1] "GenomicRanges"</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb140"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(mut_assay)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 69</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [15]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb142"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>GRanges object with 64 ranges and 34 metadata columns:
+       seqnames            ranges strand | Hugo_Symbol Entrez_Gene_Id
+          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;    &lt;character&gt;
+   [1]        X 54241715-54241716      + |        WNK3          65267
+   [2]        7         111899511      + |       IFRD1           3475
+   [3]        7         113309556      + |     PPP1R3A           5506
+   [4]        7         128146325      + |     FAM71F1          84691
+   [5]        7         156447624      + |        NOM1          64434
+   ...      ...               ...    ... .         ...            ...
+  [60]       10          50616059      + |       OGDHL          55753
+  [61]       10          96343335      + |       HELLS           3070
+  [62]        5         139173166      + |        PSD2          84249
+  [63]        5         147800932      + |      FBXO38          81545
+  [64]        5          54365356      + |        GZMK           3003
+             Center  NCBI_Build Variant_Classification Variant_Type
+        &lt;character&gt; &lt;character&gt;            &lt;character&gt;  &lt;character&gt;
+   [1] hgsc.bcm.edu          36        Frame_Shift_Ins          INS
+   [2] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [3] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [4] hgsc.bcm.edu          36                 Silent          SNP
+   [5] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   ...          ...         ...                    ...          ...
+  [60] hgsc.bcm.edu          36                 Silent          SNP
+  [61] hgsc.bcm.edu          36                 Silent          SNP
+  [62] hgsc.bcm.edu          36      Nonsense_Mutation          SNP
+  [63] hgsc.bcm.edu          36                 Silent          SNP
+  [64] hgsc.bcm.edu          36      Missense_Mutation          SNP
+       Reference_Allele Tumor_Seq_Allele1 Tumor_Seq_Allele2    dbSNP_RS
+            &lt;character&gt;       &lt;character&gt;       &lt;character&gt; &lt;character&gt;
+   [1]                -                 -                 T       novel
+   [2]                A                 A                 G       novel
+   [3]                T                 T                 C       novel
+   [4]                G                 G                 A       novel
+   [5]                A                 A                 G       novel
+   ...              ...               ...               ...         ...
+  [60]                G                 G                 A       novel
+  [61]                T                 T                 C       novel
+  [62]                C                 C                 T       novel
+  [63]                G                 G                 A       novel
+  [64]                T                 T                 A       novel
+       dbSNP_Val_Status Matched_Norm_Sample_Barcode Match_Norm_Seq_Allele1
+            &lt;character&gt;                 &lt;character&gt;            &lt;character&gt;
+   [1]          unknown      TCGA-AF-2689-10A-01W..                      -
+   [2]          unknown      TCGA-AF-2689-10A-01W..                      A
+   [3]          unknown      TCGA-AF-2689-10A-01W..                      T
+   [4]          unknown      TCGA-AF-2689-10A-01W..                      G
+   [5]          unknown      TCGA-AF-2689-10A-01W..                      A
+   ...              ...                         ...                    ...
+  [60]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [61]          unknown      TCGA-AF-2689-10A-01W..                      T
+  [62]          unknown      TCGA-AF-2689-10A-01W..                      C
+  [63]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [64]          unknown      TCGA-AF-2689-10A-01W..                      T
+       Match_Norm_Seq_Allele2 Tumor_Validation_Allele1 Tumor_Validation_Allele2
+                  &lt;character&gt;              &lt;character&gt;              &lt;character&gt;
+   [1]                      -                        -                        T
+   [2]                      A                        A                        G
+   [3]                      T                        T                        C
+   [4]                      G                        .                        .
+   [5]                      A                        A                        G
+   ...                    ...                      ...                      ...
+  [60]                      G                        .                        .
+  [61]                      T                        .                        .
+  [62]                      C                        C                        T
+  [63]                      G                        G                        A
+  [64]                      T                        T                        A
+       Match_Norm_Validation_Allele1 Match_Norm_Validation_Allele2
+                         &lt;character&gt;                   &lt;character&gt;
+   [1]                             -                             -
+   [2]                             A                             A
+   [3]                             T                             T
+   [4]                             .                             .
+   [5]                             A                             A
+   ...                           ...                           ...
+  [60]                             .                             .
+  [61]                             .                             .
+  [62]                             C                             C
+  [63]                             G                             G
+  [64]                             T                             T
+       Verification_Status Validation_Status Mutation_Status Sequencing_Phase
+               &lt;character&gt;       &lt;character&gt;     &lt;character&gt;      &lt;character&gt;
+   [1]             Unknown             Valid         Somatic          Phase_I
+   [2]             Unknown             Valid         Somatic          Phase_I
+   [3]             Unknown             Valid         Somatic          Phase_I
+   [4]             Unknown           Unknown         Somatic          Phase_I
+   [5]             Unknown             Valid         Somatic          Phase_I
+   ...                 ...               ...             ...              ...
+  [60]             Unknown           Unknown         Somatic          Phase_I
+  [61]             Unknown           Unknown         Somatic          Phase_I
+  [62]             Unknown             Valid         Somatic          Phase_I
+  [63]             Unknown             Valid         Somatic          Phase_I
+  [64]             Unknown             Valid         Somatic          Phase_I
+       Sequence_Source Validation_Method       Score    BAM_file   Sequencer
+           &lt;character&gt;       &lt;character&gt; &lt;character&gt; &lt;character&gt; &lt;character&gt;
+   [1]         Capture               454                               SOLID
+   [2]         Capture               454                               SOLID
+   [3]         Capture               454                               SOLID
+   [4]         Capture                 .                               SOLID
+   [5]         Capture               454                               SOLID
+   ...             ...               ...         ...         ...         ...
+  [60]         Capture                 .                               SOLID
+  [61]         Capture                 .                               SOLID
+  [62]         Capture               454                               SOLID
+  [63]         Capture               454                               SOLID
+  [64]         Capture               454                               SOLID
+       TranscriptID        Exon     ChromChange    AAChange COSMIC_Codon
+        &lt;character&gt; &lt;character&gt;     &lt;character&gt; &lt;character&gt;  &lt;character&gt;
+   [1] NM_001002838      exon23 c.4999_5000insA   p.L1667fs            .
+   [2]    NM_001550      exon10        c.A1043G     p.E348G            .
+   [3]    NM_002711       exon2         c.A838G     p.T280A            .
+   [4]    NM_032599       exon3         c.G639A     p.T213T            .
+   [5]    NM_138400       exon5        c.A1651G     p.T551A            .
+   ...          ...         ...             ...         ...          ...
+  [60] NM_001143996      exon18        c.C2286T     p.S762S            .
+  [61]    NM_018063      exon18        c.T2061C     p.D687D            .
+  [62]    NM_032289       exon3         c.C460T     p.Q154X            .
+  [63]    NM_205836      exon21        c.G3327A    p.R1109R            .
+  [64]    NM_002104       exon5         c.T640A     p.S214T            .
+       COSMIC_Gene Drug_Target
+       &lt;character&gt; &lt;character&gt;
+   [1]           .           .
+   [2]           .           .
+   [3]           .           .
+   [4]           .           .
+   [5]           .           .
+   ...         ...         ...
+  [60]           .           .
+  [61]           .           .
+  [62]           .           .
+  [63]           .           .
+  [64]           .           .
+  -------
+  seqinfo: 24 sequences from NCBI36 genome; no seqlengths</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb144"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a href="#cb144-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]<span class="sc">$</span>Hugo_Symbol</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "WNK3"     "IFRD1"    "PPP1R3A"  "FAM71F1"  "NOM1"     "TRIM73"  
+ [7] "C7orf51"  "DIDO1"    "DNMT1"    "CALR"     "SIN3B"    "ZNF569"  
+[13] "SIGLEC12" "ZNF160"   "NLRP4"    "ENPP2"    "TRPA1"    "MMP16"   
+[19] "GPR89A"   "SLC9A11"  "PAX7"     "PLA2G5"   "SLC26A9"  "PIK3R3"  
+[25] "LPPR4"    "BCL9L"    "PRDM11"   "PEX3"     "DCDC2"    "KRT20"   
+[31] "TP53"     "CDH8"     "SF3B3"    "SLC9A10"  "SLC7A14"  "NLGN1"   
+[37] "MYRIP"    "CYP8B1"   "TGM4"     "COL7A1"   "P2RX7"    "KRAS"    
+[43] "TPH2"     "ANO4"     "UBR1"     "LBXCOR1"  "PDLIM5"   "ODZ1"    
+[49] "SMARCA1"  "CNKSR2"   "RBM10"    "RBM3"     "HUWE1"    "CYLC1"   
+[55] "ATP6V1E2" "ASTN2"    "TAF1L"    "SGCG"     "GBF1"     "OGDHL"   
+[61] "HELLS"    "PSD2"     "FBXO38"   "GZMK"    </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb146"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]<span class="sc">$</span>Mutation_Status <span class="sc">|&gt;</span> </span>
+<span id="cb146-2"><a href="#cb146-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Somatic 
+     64 </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb148"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]<span class="sc">$</span>Variant_Classification <span class="sc">|&gt;</span> </span>
+<span id="cb148-2"><a href="#cb148-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  Frame_Shift_Ins Missense_Mutation Nonsense_Mutation            Silent 
+                1                39                 5                19 </code></pre>
+</div>
+</div></div>
+<p>lets get all mutation information for all the samples</p>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [16]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb150"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>var_class_df <span class="ot">=</span> <span class="fu">mapply</span>(<span class="cf">function</span>(sample_id, mutation_assay){</span>
+<span id="cb150-2"><a href="#cb150-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-3"><a href="#cb150-3" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">=</span> <span class="fu">mcols</span>(mutation_assay)[,<span class="fu">c</span>(<span class="st">"Hugo_Symbol"</span>,<span class="st">"Variant_Classification"</span>)] <span class="sc">|&gt;</span> </span>
+<span id="cb150-4"><a href="#cb150-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>()</span>
+<span id="cb150-5"><a href="#cb150-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-6"><a href="#cb150-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(d) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"symbol"</span>,<span class="st">"variant_class"</span>)</span>
+<span id="cb150-7"><a href="#cb150-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-8"><a href="#cb150-8" aria-hidden="true" tabindex="-1"></a>  d<span class="sc">$</span>patientID <span class="ot">=</span> sample_id</span>
+<span id="cb150-9"><a href="#cb150-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-10"><a href="#cb150-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d)</span>
+<span id="cb150-11"><a href="#cb150-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-12"><a href="#cb150-12" aria-hidden="true" tabindex="-1"></a>}, <span class="at">sample_id=</span>mut_sample_ids, <span class="at">mutation_assay =</span> mut_assay,<span class="at">SIMPLIFY =</span> F, <span class="at">USE.NAMES =</span> F)</span>
+<span id="cb150-13"><a href="#cb150-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-14"><a href="#cb150-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-15"><a href="#cb150-15" aria-hidden="true" tabindex="-1"></a>var_class_df <span class="ot">=</span> <span class="fu">do.call</span>(rbind, var_class_df)</span>
+<span id="cb150-16"><a href="#cb150-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-17"><a href="#cb150-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-18"><a href="#cb150-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(var_class_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   symbol     variant_class    patientID
+1    WNK3   Frame_Shift_Ins TCGA-AF-2689
+2   IFRD1 Missense_Mutation TCGA-AF-2689
+3 PPP1R3A Missense_Mutation TCGA-AF-2689
+4 FAM71F1            Silent TCGA-AF-2689
+5    NOM1 Missense_Mutation TCGA-AF-2689
+6  TRIM73 Nonsense_Mutation TCGA-AF-2689</code></pre>
+</div>
+</div></div>
+<p>most common mutated genes genes in rectum adenocarcinoma</p>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [17]:</pre></div><div id="cell-fig-genesmut" class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb152"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb152-1"><a href="#cb152-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb152-2"><a href="#cb152-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> var_class_df <span class="sc">|&gt;</span> </span>
+<span id="cb152-3"><a href="#cb152-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb152-4"><a href="#cb152-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(symbol,variant_class) <span class="sc">|&gt;</span> </span>
+<span id="cb152-5"><a href="#cb152-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb152-6"><a href="#cb152-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">|&gt;</span> </span>
+<span id="cb152-7"><a href="#cb152-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb152-8"><a href="#cb152-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="at">order_by =</span> n, <span class="at">n =</span> <span class="dv">20</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb152-9"><a href="#cb152-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb152-10"><a href="#cb152-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">symbol =</span> <span class="fu">fct_reorder</span>(symbol,n)) <span class="sc">|&gt;</span> </span>
+<span id="cb152-11"><a href="#cb152-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(n, symbol,<span class="at">fill=</span>variant_class)) <span class="sc">+</span></span>
+<span id="cb152-12"><a href="#cb152-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb152-13"><a href="#cb152-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>variant_class) <span class="sc">+</span></span>
+<span id="cb152-14"><a href="#cb152-14" aria-hidden="true" tabindex="-1"></a>  paletteer<span class="sc">::</span><span class="fu">scale_fill_paletteer_d</span>(<span class="st">"awtools::a_palette"</span>) <span class="sc">+</span></span>
+<span id="cb152-15"><a href="#cb152-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Number of samples with specific mutation"</span>, <span class="at">y=</span><span class="st">"Gene Symbol"</span>, <span class="at">fill=</span><span class="st">"Variant Class"</span>,</span>
+<span id="cb152-16"><a href="#cb152-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">title=</span><span class="st">"Top 20 Samples with Rectum Adenocarcinoma Mutation"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'symbol'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb154"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb154-1"><a href="#cb154-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb154-2"><a href="#cb154-2" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-genesmut" class="quarto-figure quarto-figure-center quarto-float anchored" width="2700">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-genesmut-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="">
+<a href="TCGA_files/figure-html/fig-genesmut-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="TCGA_files/figure-html/fig-genesmut-1.png" id="fig-genesmut" class="img-fluid figure-img" width="2700"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-genesmut-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+</figcaption>
+</figure>
+</div>
+</div>
+</div></div>
+</section>
+<section id="linking-mutations-and-tumor-stage" class="level1">
+<h1>Linking mutations and tumor stage</h1>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [18]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb155"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb155-1"><a href="#cb155-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="fu">which</span>( (var_class_df<span class="sc">$</span>patientID <span class="sc">|&gt;</span> <span class="fu">unique</span>()) <span class="sc">%in%</span> clin<span class="sc">$</span>patientID)</span>
+<span id="cb155-2"><a href="#cb155-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb155-3"><a href="#cb155-3" aria-hidden="true" tabindex="-1"></a>clin_and_mutation <span class="ot">=</span> clin[index,]</span>
+<span id="cb155-4"><a href="#cb155-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb155-5"><a href="#cb155-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(clin_and_mutation) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 2,261
+  patientID    years_to_birth vital_status days_to_death days_to_last_followup
+  &lt;chr&gt;                 &lt;int&gt;        &lt;int&gt;         &lt;int&gt;                 &lt;int&gt;
+1 TCGA-AF-2687             57            0            NA                  1427
+2 TCGA-AF-2689             41            1          1201                    NA
+3 TCGA-AF-2690             76            1           524                    NA
+4 TCGA-AF-2691             48            0            NA                  1309
+5 TCGA-AF-2692             54            0            NA                   412
+6 TCGA-AF-2693             75            0            NA                  1155
+# ℹ 2,256 more variables: tumor_tissue_site &lt;chr&gt;, pathologic_stage &lt;chr&gt;,
+#   pathology_T_stage &lt;chr&gt;, pathology_N_stage &lt;chr&gt;, pathology_M_stage &lt;chr&gt;,
+#   gender &lt;chr&gt;, date_of_initial_pathologic_diagnosis &lt;int&gt;,
+#   days_to_last_known_alive &lt;int&gt;, radiation_therapy &lt;chr&gt;,
+#   histological_type &lt;chr&gt;, tumor_stage &lt;chr&gt;, residual_tumor &lt;chr&gt;,
+#   number_of_lymph_nodes &lt;int&gt;, ethnicity &lt;chr&gt;, admin.bcr &lt;chr&gt;,
+#   admin.day_of_dcc_upload &lt;int&gt;, admin.disease_code &lt;chr&gt;, …</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [19]:</pre></div><div id="cell-fig-plot1" class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb157"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb157-2"><a href="#cb157-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> var_class_df <span class="sc">|&gt;</span> </span>
+<span id="cb157-3"><a href="#cb157-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(patientID) <span class="sc">|&gt;</span> </span>
+<span id="cb157-4"><a href="#cb157-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>())</span>
+<span id="cb157-5"><a href="#cb157-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb157-6"><a href="#cb157-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> clin_and_mutation <span class="sc">|&gt;</span> </span>
+<span id="cb157-7"><a href="#cb157-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(df, <span class="at">by =</span> <span class="fu">join_by</span>(patientID)) <span class="sc">|&gt;</span> </span>
+<span id="cb157-8"><a href="#cb157-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(t_stage,<span class="fu">log</span>(n), <span class="at">fill=</span>t_stage))<span class="sc">+</span></span>
+<span id="cb157-9"><a href="#cb157-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb157-10"><a href="#cb157-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.05</span>, <span class="at">colour=</span><span class="st">"red2"</span>) <span class="sc">+</span></span>
+<span id="cb157-11"><a href="#cb157-11" aria-hidden="true" tabindex="-1"></a>  paletteer<span class="sc">::</span><span class="fu">scale_fill_paletteer_d</span>(<span class="st">"awtools::a_palette"</span>)</span>
+<span id="cb157-12"><a href="#cb157-12" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 20 rows containing non-finite outside the scale range
+(`stat_boxplot()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 20 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div id="fig-plot1" class="quarto-figure quarto-figure-center quarto-float anchored" width="2700">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-plot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="">
+<a href="TCGA_files/figure-html/fig-plot1-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="TCGA_files/figure-html/fig-plot1-1.png" id="fig-plot1" class="img-fluid figure-img" width="2700"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-plot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+</figcaption>
+</figure>
+</div>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [20]:</pre></div><div id="cell-fig-plot_tp53" class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb160"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb160-1"><a href="#cb160-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb160-2"><a href="#cb160-2" aria-hidden="true" tabindex="-1"></a>mut_on_tp53 <span class="ot">&lt;-</span> var_class_df <span class="sc">|&gt;</span> </span>
+<span id="cb160-3"><a href="#cb160-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(symbol <span class="sc">==</span> <span class="st">"TP53"</span>) </span>
+<span id="cb160-4"><a href="#cb160-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb160-5"><a href="#cb160-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb160-6"><a href="#cb160-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span>clin_and_mutation <span class="sc">|&gt;</span> </span>
+<span id="cb160-7"><a href="#cb160-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(patientID <span class="sc">%in%</span>  mut_on_tp53<span class="sc">$</span>patientID) <span class="sc">|&gt;</span> </span>
+<span id="cb160-8"><a href="#cb160-8" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(t_stage, patientID) <span class="sc">|&gt;</span> </span>
+<span id="cb160-9"><a href="#cb160-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(t_stage) <span class="sc">|&gt;</span> </span>
+<span id="cb160-10"><a href="#cb160-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb160-11"><a href="#cb160-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mutate(t_stage = fct_reorder(t_stage,n)) |&gt; </span></span>
+<span id="cb160-12"><a href="#cb160-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(n, t_stage, <span class="at">fill=</span>t_stage, <span class="at">label=</span>n)) <span class="sc">+</span></span>
+<span id="cb160-13"><a href="#cb160-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb160-14"><a href="#cb160-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">fill=</span><span class="st">"white"</span>)  <span class="sc">+</span></span>
+<span id="cb160-15"><a href="#cb160-15" aria-hidden="true" tabindex="-1"></a>  paletteer<span class="sc">::</span><span class="fu">scale_fill_paletteer_d</span>(<span class="st">"awtools::a_palette"</span>)<span class="sc">+</span></span>
+<span id="cb160-16"><a href="#cb160-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Tumor Stage"</span>, <span class="at">x=</span><span class="st">"N° of Mutations"</span>, <span class="at">fill=</span><span class="st">"Tumor Stage"</span>, <span class="at">title=</span><span class="st">"Number of Mutations on Gene TP53"</span>)</span>
+<span id="cb160-17"><a href="#cb160-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb160-18"><a href="#cb160-18" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-plot_tp53" class="quarto-figure quarto-figure-center quarto-float anchored" width="2700">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-plot_tp53-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="">
+<a href="TCGA_files/figure-html/fig-plot_tp53-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="TCGA_files/figure-html/fig-plot_tp53-1.png" id="fig-plot_tp53" class="img-fluid figure-img" width="2700"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-plot_tp53-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+</figcaption>
+</figure>
+</div>
+</div>
+</div></div>
+</section>
+<section id="linking-expression-and-tumor-stage" class="level1">
+<h1>Linking expression and tumor stage</h1>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [21]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb161"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a>rnaseq <span class="ot">=</span> readData[[<span class="dv">2</span>]]</span>
+<span id="cb161-2"><a href="#cb161-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb161-3"><a href="#cb161-3" aria-hidden="true" tabindex="-1"></a>rnaseq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>class: SummarizedExperiment 
+dim: 18115 177 
+metadata(3): filename build platform
+assays(1): ''
+rownames(18115): A1BG A1CF ... ZZZ3 psiTPTE22
+rowData names(0):
+colnames(177): TCGA-AF-2687-01 TCGA-AF-2689-11 ... TCGA-AG-A032-01
+  TCGA-AG-A036-01
+colData names(0):</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [22]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rnaseq) <span class="ot">=</span> <span class="fu">colnames</span>(rnaseq) <span class="sc">|&gt;</span> </span>
+<span id="cb163-2"><a href="#cb163-2" aria-hidden="true" tabindex="-1"></a>  stringr<span class="sc">::</span><span class="fu">str_sub</span>(<span class="dv">1</span>,<span class="dv">12</span>)</span>
+<span id="cb163-3"><a href="#cb163-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb163-4"><a href="#cb163-4" aria-hidden="true" tabindex="-1"></a>clin <span class="ot">&lt;-</span> clin <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb163-5"><a href="#cb163-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(clin) <span class="ot">&lt;-</span> clin<span class="sc">$</span>patientID</span>
+<span id="cb163-6"><a href="#cb163-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb163-7"><a href="#cb163-7" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">colnames</span>(rnaseq) <span class="sc">%in%</span> <span class="fu">rownames</span>(clin))</span>
+<span id="cb163-8"><a href="#cb163-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb163-9"><a href="#cb163-9" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(rnaseq) <span class="ot">=</span> <span class="fu">as</span>(clin[<span class="fu">colnames</span>(rnaseq),],<span class="st">"DataFrame"</span>)</span>
+<span id="cb163-10"><a href="#cb163-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb163-11"><a href="#cb163-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb163-12"><a href="#cb163-12" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">is.na</span>(<span class="fu">colData</span>(rnaseq)<span class="sc">$</span>t_stage)</span>
+<span id="cb163-13"><a href="#cb163-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb163-14"><a href="#cb163-14" aria-hidden="true" tabindex="-1"></a>rnaseq <span class="ot">&lt;-</span> rnaseq[,<span class="sc">!</span>idx]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [23]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb164"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb164-1"><a href="#cb164-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(limma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'limma' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'limma'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:BiocGenerics':
+
+    plotMA</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb168"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb168-1"><a href="#cb168-1" aria-hidden="true" tabindex="-1"></a>mm <span class="ot">=</span> <span class="fu">model.matrix</span>(<span class="sc">~</span>t_stage, <span class="at">data=</span><span class="fu">colData</span>(rnaseq))</span>
+<span id="cb168-2"><a href="#cb168-2" aria-hidden="true" tabindex="-1"></a>f1 <span class="ot">=</span> <span class="fu">lmFit</span>(<span class="fu">assay</span>(rnaseq), mm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Partial NA coefficients for 5 probe(s)</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb170"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb170-1"><a href="#cb170-1" aria-hidden="true" tabindex="-1"></a>ef1 <span class="ot">=</span> <span class="fu">eBayes</span>(f1)</span>
+<span id="cb170-2"><a href="#cb170-2" aria-hidden="true" tabindex="-1"></a><span class="fu">topTable</span>(ef1) <span class="sc">|&gt;</span> </span>
+<span id="cb170-3"><a href="#cb170-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(AveExpr))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Removing intercept from test coefficients</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           t_staget2   t_staget3  t_staget4     AveExpr         F      P.Value
+PAM       -0.5791836  0.08813521  0.4984790 10.94216940  8.309141 3.409613e-05
+PAIP2     -0.3240061  0.18551765  0.0958645 10.29398797  9.056896 1.331550e-05
+SPP1      -0.3352086  1.56339367  2.6409082  9.61423581  9.316731 9.621982e-06
+NIPSNAP3A -0.9988818 -0.35051776 -0.6085837  9.38910637  8.712515 2.051165e-05
+ASPN      -0.7366657  0.75340984  1.9537316  7.45952050  8.323019 3.350393e-05
+OLR1      -0.2557879  1.39542897  2.1822156  4.97144475  8.531715 2.597133e-05
+SEMA5B     1.3576218  1.27252058  1.9271042  4.60337761  8.091237 4.490926e-05
+CPSF4L     1.0629502 -0.17984587 -1.4274556  0.70036223  8.955085 2.311056e-05
+GRM5       1.3027501 -0.14596612 -0.7395609  0.06134539 10.268851 7.301656e-06
+C1orf223   0.7830779 -0.40735736 -0.7062534 -0.35136703  9.681632 1.743477e-05
+           adj.P.Val
+PAM       0.06860899
+PAIP2     0.06719153
+SPP1      0.06719153
+NIPSNAP3A 0.06719153
+ASPN      0.06860899
+OLR1      0.06719153
+SEMA5B    0.07597995
+CPSF4L    0.06719153
+GRM5      0.06719153
+C1orf223  0.06719153</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [24]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb173-2"><a href="#cb173-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(<span class="fu">split</span>(<span class="fu">assay</span>(rnaseq)[<span class="st">"PAM"</span>,], rnaseq<span class="sc">$</span>t_stage), <span class="at">main=</span><span class="st">"PAM"</span>)    <span class="co"># higher expression in lower t_stage</span></span>
+<span id="cb173-3"><a href="#cb173-3" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(<span class="fu">split</span>(<span class="fu">assay</span>(rnaseq)[<span class="st">"PAIP2"</span>,], rnaseq<span class="sc">$</span>t_stage), <span class="at">main=</span><span class="st">"PAIP2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="">
+<figure class="figure">
+<p class=""><a href="TCGA_files/figure-html/unnamed-chunk-24-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="TCGA_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="2700"></a></p>
+</figure>
+</div>
+</div>
+</div></div>
+</section>
+<section id="linking-methylation-and-expression" class="level1">
+<h1>Linking methylation and expression</h1>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [25]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb174"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb174-1"><a href="#cb174-1" aria-hidden="true" tabindex="-1"></a>methyl <span class="ot">&lt;-</span> readData[[<span class="dv">3</span>]]</span>
+<span id="cb174-2"><a href="#cb174-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-3"><a href="#cb174-3" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">colnames</span>(methyl) <span class="sc">|&gt;</span> </span>
+<span id="cb174-4"><a href="#cb174-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split</span>(<span class="at">pattern =</span> <span class="st">"-"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb174-5"><a href="#cb174-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="dv">4</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb174-6"><a href="#cb174-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">enframe</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb174-7"><a href="#cb174-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(value)</span>
+<span id="cb174-8"><a href="#cb174-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-9"><a href="#cb174-9" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">which</span>(idx<span class="sc">$</span>value <span class="sc">==</span> <span class="st">"01A"</span>)</span>
+<span id="cb174-10"><a href="#cb174-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-11"><a href="#cb174-11" aria-hidden="true" tabindex="-1"></a>methyl <span class="ot">=</span> methyl[,idx]</span>
+<span id="cb174-12"><a href="#cb174-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-13"><a href="#cb174-13" aria-hidden="true" tabindex="-1"></a>methyl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>class: SummarizedExperiment 
+dim: 485577 95 
+metadata(0):
+assays(1): counts
+rownames(485577): cg00000029 cg00000108 ... rs966367 rs9839873
+rowData names(3): Gene_Symbol Chromosome Genomic_Coordinate
+colnames(95): TCGA-AF-2687-01A-02D-1734-05 TCGA-AF-2690-01A-02D-1734-05
+  ... TCGA-G5-6572-01A-11D-1828-05 TCGA-G5-6641-01A-11D-1828-05
+colData names(0):</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [26]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb176"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb176-1"><a href="#cb176-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(methyl) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(methyl) <span class="sc">|&gt;</span> </span>
+<span id="cb176-2"><a href="#cb176-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_sub</span>(<span class="at">start =</span> <span class="dv">1</span>,<span class="at">end =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [27]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(methyl) <span class="ot">&lt;-</span> <span class="fu">as</span>(clin[<span class="fu">colnames</span>(methyl),],<span class="st">"DataFrame"</span>)</span>
+<span id="cb177-2"><a href="#cb177-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-3"><a href="#cb177-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-4"><a href="#cb177-4" aria-hidden="true" tabindex="-1"></a><span class="fu">intersect</span>(<span class="fu">colnames</span>(methyl), <span class="fu">colnames</span>(rnaseq)) <span class="sc">|&gt;</span> <span class="fu">length</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 93</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [28]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a>methyl_subset <span class="ot">=</span> methyl[,<span class="fu">which</span>(<span class="fu">colnames</span>(methyl) <span class="sc">%in%</span> <span class="fu">colnames</span>(rnaseq))]</span>
+<span id="cb179-2"><a href="#cb179-2" aria-hidden="true" tabindex="-1"></a>rnaseq_subset <span class="ot">=</span> rnaseq[,<span class="fu">which</span>(<span class="fu">colnames</span>(rnaseq) <span class="sc">%in%</span> <span class="fu">colnames</span>(methyl))]</span>
+<span id="cb179-3"><a href="#cb179-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb179-4"><a href="#cb179-4" aria-hidden="true" tabindex="-1"></a>methyl_genes <span class="ot">=</span> <span class="fu">rowData</span>(methyl_subset)</span>
+<span id="cb179-5"><a href="#cb179-5" aria-hidden="true" tabindex="-1"></a>methyl_genes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 485577 rows and 3 columns
+           Gene_Symbol  Chromosome Genomic_Coordinate
+           &lt;character&gt; &lt;character&gt;        &lt;character&gt;
+cg00000029        RBL2          16           53468112
+cg00000108     C3orf35           3           37459206
+cg00000109      FNDC3B           3          171916037
+cg00000165          NA           1           91194674
+cg00000236       VDAC3           8           42263294
+...                ...         ...                ...
+rs9363764           NA          NA                  0
+rs939290            NA          NA                  0
+rs951295            NA          NA                  0
+rs966367            NA          NA                  0
+rs9839873           NA          NA                  0</code></pre>
+</div>
+</div></div>
+<div class="cell-container code-fold"><div class="cell-decorator"><pre>In [29]:</pre></div><div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb181"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb181-1"><a href="#cb181-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-2"><a href="#cb181-2" aria-hidden="true" tabindex="-1"></a>me_rna_cor <span class="ot">=</span> <span class="cf">function</span>(sym, <span class="at">mpick =</span> <span class="dv">3</span>){</span>
+<span id="cb181-3"><a href="#cb181-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset methylation data to first mpick methylation sites for given gene symbol</span></span>
+<span id="cb181-4"><a href="#cb181-4" aria-hidden="true" tabindex="-1"></a>    methyl_ind <span class="ot">=</span> <span class="fu">which</span>(methyl_genes<span class="sc">$</span>Gene_Symbol <span class="sc">==</span> sym)</span>
+<span id="cb181-5"><a href="#cb181-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(methyl_ind) <span class="sc">&gt;</span> mpick){    </span>
+<span id="cb181-6"><a href="#cb181-6" aria-hidden="true" tabindex="-1"></a>        methyl_ind <span class="ot">=</span> methyl_ind[<span class="dv">1</span><span class="sc">:</span>mpick]</span>
+<span id="cb181-7"><a href="#cb181-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb181-8"><a href="#cb181-8" aria-hidden="true" tabindex="-1"></a>    methyl_dat <span class="ot">=</span> <span class="fu">assay</span>(methyl_subset)[methyl_ind,]    <span class="co"># subset to selected methylation sites</span></span>
+<span id="cb181-9"><a href="#cb181-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-10"><a href="#cb181-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset expression data to selected gene symbol</span></span>
+<span id="cb181-11"><a href="#cb181-11" aria-hidden="true" tabindex="-1"></a>    expr_ind <span class="ot">=</span> <span class="fu">which</span>(<span class="fu">rownames</span>(rnaseq_subset) <span class="sc">==</span> sym)    </span>
+<span id="cb181-12"><a href="#cb181-12" aria-hidden="true" tabindex="-1"></a>    expr_dat <span class="ot">=</span> <span class="fu">assay</span>(rnaseq_subset)[expr_ind,]</span>
+<span id="cb181-13"><a href="#cb181-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-14"><a href="#cb181-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine methylation and expression data as data frame</span></span>
+<span id="cb181-15"><a href="#cb181-15" aria-hidden="true" tabindex="-1"></a>    combined_dat <span class="ot">=</span> <span class="fu">as</span>(<span class="fu">t</span>(methyl_dat), <span class="st">"DataFrame"</span>)</span>
+<span id="cb181-16"><a href="#cb181-16" aria-hidden="true" tabindex="-1"></a>    combined_dat<span class="sc">$</span>expr <span class="ot">=</span> expr_dat</span>
+<span id="cb181-17"><a href="#cb181-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-18"><a href="#cb181-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot pairs and calculate correlation coefficients between methylation and expression</span></span>
+<span id="cb181-19"><a href="#cb181-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pairs</span>(combined_dat) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
+<span id="cb181-20"><a href="#cb181-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span>mpick, <span class="cf">function</span>(i){</span>
+<span id="cb181-21"><a href="#cb181-21" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb181-22"><a href="#cb181-22" aria-hidden="true" tabindex="-1"></a>        cor_to <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(combined_dat[,mpick<span class="sc">+</span><span class="dv">1</span>])</span>
+<span id="cb181-23"><a href="#cb181-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb181-24"><a href="#cb181-24" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">v1=</span> <span class="fu">as.numeric</span>(combined_dat[,i]),</span>
+<span id="cb181-25"><a href="#cb181-25" aria-hidden="true" tabindex="-1"></a>                         <span class="at">v2 =</span> cor_to)</span>
+<span id="cb181-26"><a href="#cb181-26" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb181-27"><a href="#cb181-27" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> <span class="fu">na.omit</span>()</span>
+<span id="cb181-28"><a href="#cb181-28" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb181-29"><a href="#cb181-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cor</span>(df[,<span class="dv">1</span>], df[,<span class="dv">2</span>])</span>
+<span id="cb181-30"><a href="#cb181-30" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb181-31"><a href="#cb181-31" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb181-32"><a href="#cb181-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-33"><a href="#cb181-33" aria-hidden="true" tabindex="-1"></a><span class="fu">me_rna_cor</span>(<span class="st">"TAC1"</span>, <span class="at">mpick=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="">
+<figure class="figure">
+<p class=""><a href="TCGA_files/figure-html/unnamed-chunk-29-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="TCGA_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="2700"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>NULL</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.0410095 0.1457715 0.0856926</code></pre>
+</div>
+</div></div>
+</section>
+     </main>
+<!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","loop":false,"openEffect":"zoom"});
+window.onload = () => {
+  lightboxQuarto.on('slide_before_load', (data) => {
+    const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+    const href = trigger.getAttribute('href');
+    if (href !== null) {
+      const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+      if (imgEl !== null) {
+        const srcAttr = imgEl.getAttribute("src");
+        if (srcAttr && srcAttr.startsWith("data:")) {
+          slideConfig.href = srcAttr;
+        }
+      }
+    } 
+  });
+
+  lightboxQuarto.on('slide_after_load', (data) => {
+    const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+    if (window.Quarto?.typesetMath) {
+      window.Quarto.typesetMath(slideNode);
+    }
+  });
+
+};
+          </script> 
+  
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

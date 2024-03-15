@@ -6,12 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Steve Purves">
-<meta name="author" content="Rowan Cockett">
-<meta name="dcterms.date" content="2024-03-13">
-<meta name="keywords" content="La Palma, Earthquakes">
+<meta name="author" content="Piero Palacios Bernuy">
+<meta name="dcterms.date" content="2024-03-15">
+<meta name="keywords" content="Genomic Ranges, Omics, Bioconductor">
 
-<title>La Palma Earthquakes</title>
+<title>Integrative Analysis of Multi-omic Data</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -28,7 +27,6 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
-  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -66,49 +64,32 @@ div.csl-indent {
     document.body.classList.add('hypothesis-enabled');
   });
 </script>
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.10.4/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+<link href="site_libs/htmltools-fill-0.5.7/fill.css" rel="stylesheet">
+<script src="site_libs/bslib-component-js-0.6.1/components.min.js"></script>
+<script src="site_libs/bslib-component-js-0.6.1/web-components.min.js" type="module"></script>
+<link href="site_libs/bslib-component-css-0.6.1/components.css" rel="stylesheet">
+<script src="site_libs/bslib-tag-require-0.6.1/tag-require.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<meta name="citation_title" content="La Palma Earthquakes">
-<meta name="citation_abstract" content="In September 2021, a significant jump in seismic activity on the island of La Palma (Canary Islands, Spain) signaled the start of a volcanic crisis that still continues at the time of writing. Earthquake data is continually collected and published by the Instituto Geográphico Nacional (IGN). ...
+<meta name="citation_title" content="Integrative Analysis of Multi-omic Data">
+<meta name="citation_abstract" content="This document is part of a series of the analysis of Omics data. Especifically, here is showed how to analyze bulk RNA-Seq data with Bioconductor packages. Also, it&amp;amp;#039;s showcased how to make plots of the RNA data in the context of differentially gene expression and gene-sets.
 ">
-<meta name="citation_keywords" content="La Palma,Earthquakes">
-<meta name="citation_author" content="Steve Purves">
-<meta name="citation_author" content="Rowan Cockett">
-<meta name="citation_publication_date" content="2024-03-13">
-<meta name="citation_cover_date" content="2024-03-13">
+<meta name="citation_keywords" content="Genomic Ranges,Omics,Bioconductor">
+<meta name="citation_author" content="Piero Palacios Bernuy">
+<meta name="citation_publication_date" content="2024-03-15">
+<meta name="citation_cover_date" content="2024-03-15">
 <meta name="citation_year" content="2024">
-<meta name="citation_online_date" content="2024-03-13">
+<meta name="citation_online_date" content="2024-03-15">
 <meta name="citation_language" content="en">
-<meta name="citation_journal_title" content="Earth and Space Science">
+<meta name="citation_journal_title" content="An open source portfolio">
 <meta name="citation_reference" content="citation_title=Strategies for the development of volcanic hazard maps in monogenetic volcanic fields: The example of La Palma (Canary Islands);,citation_author=José Marrero;,citation_author=Alicia García;,citation_author=Manuel Berrocoso;,citation_author=Ángeles Llinares;,citation_author=Antonio Rodríguez-Losada;,citation_author=R. Ortiz;,citation_publication_date=2019-07;,citation_cover_date=2019-07;,citation_year=2019;,citation_doi=10.1186/s13617-019-0085-5;,citation_volume=8;,citation_journal_title=Journal of Applied Volcanology;">
 </head>
 
@@ -117,41 +98,26 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">La Palma Earthquakes</h1>
+      <h1 class="title">Integrative Analysis of Multi-omic Data</h1>
           </div>
 
     
     <div class="quarto-title-meta-container">
       <div class="quarto-title-meta-column-start">
-            <div class="quarto-title-meta-author">
-          <div class="quarto-title-meta-heading">Authors</div>
-          <div class="quarto-title-meta-heading">Affiliation</div>
-          
-                <div class="quarto-title-meta-contents">
-            <p class="author">Steve Purves <a href="mailto:steve@curvenote.com" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0002-0760-5497" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
-          </div>
-                <div class="quarto-title-meta-contents">
-                    <p class="affiliation">
-                        Curvenote
-                      </p>
-                  </div>
-                      <div class="quarto-title-meta-contents">
-            <p class="author">Rowan Cockett <a href="https://orcid.org/0000-0002-7859-8394" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
-          </div>
-                <div class="quarto-title-meta-contents">
-                    <p class="affiliation">
-                        Curvenote
-                      </p>
-                  </div>
-                    </div>
         
         <div class="quarto-title-meta">
 
-                      
+                <div>
+            <div class="quarto-title-meta-heading">Author</div>
+            <div class="quarto-title-meta-contents">
+                        <p>Piero Palacios Bernuy <a href="mailto:p.palacios.bernuy@gmail.com" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0001-6729-4080" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+                      </div>
+          </div>
+                
                 <div>
             <div class="quarto-title-meta-heading">Published</div>
             <div class="quarto-title-meta-contents">
-              <p class="date">March 13, 2024</p>
+              <p class="date">March 15, 2024</p>
             </div>
           </div>
           
@@ -159,20 +125,20 @@ window.Quarto = {
               </div>
       </div>
       <div class="quarto-title-meta-column-end quarto-other-formats-target">
-      <div class="quarto-alternate-formats"><div class="quarto-title-meta-heading">Other Formats</div><div class="quarto-title-meta-contents"><p><a href="index.docx"><i class="bi bi-file-word"></i>MS Word</a></p></div><div class="quarto-title-meta-contents"><p><a href="index.pdf"><i class="bi bi-file-pdf"></i>PDF (agu)</a></p></div><div class="quarto-title-meta-contents"><p><a href="index-meca.zip" data-meca-link="true"><i class="bi bi-archive"></i>MECA Bundle</a></p></div></div></div>
+      </div>
     </div>
 
     <div>
       <div class="abstract">
         <div class="block-title">Abstract</div>
-        <p>In September 2021, a significant jump in seismic activity on the island of La Palma (Canary Islands, Spain) signaled the start of a volcanic crisis that still continues at the time of writing. Earthquake data is continually collected and published by the Instituto Geográphico Nacional (IGN). …</p>
+        <p>This document is part of a series of the analysis of Omics data. Especifically, here is showed how to analyze bulk RNA-Seq data with Bioconductor packages. Also, it’s showcased how to make plots of the RNA data in the context of differentially gene expression and gene-sets.</p>
       </div>
     </div>
 
     <div>
       <div class="keywords">
         <div class="block-title">Keywords</div>
-        <p>La Palma, Earthquakes</p>
+        <p>Genomic Ranges, Omics, Bioconductor</p>
       </div>
     </div>
 
@@ -185,11 +151,12 @@ window.Quarto = {
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
-  <li><a href="#sec-data-methods" id="toc-sec-data-methods" class="nav-link" data-scroll-target="#sec-data-methods"><span class="header-section-number">2</span> Data &amp; Methods</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">3</span> Conclusion</a></li>
+  <li><a href="#gwas-catalog-with-a-chip-seq-experiment" id="toc-gwas-catalog-with-a-chip-seq-experiment" class="nav-link" data-scroll-target="#gwas-catalog-with-a-chip-seq-experiment"><span class="header-section-number">2</span> GWAS Catalog with a ChIP-Seq Experiment</a></li>
+  <li><a href="#sec-data-methods" id="toc-sec-data-methods" class="nav-link" data-scroll-target="#sec-data-methods"><span class="header-section-number">3</span> Data &amp; Methods</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">4</span> Conclusion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
-<div class="quarto-alternate-notebooks"><h2>Notebooks</h2><ul><li><a href="index-preview.html"><i class="bi bi-journal-code"></i>Article Notebook</a></li><li><a href="notebooks/explore-earthquakes-preview.html"><i class="bi bi-journal-code"></i>Explore Earthquakes</a></li></ul></div></nav>
+<div class="quarto-alternate-notebooks"><h2>Notebooks</h2><ul><li><a href="index-preview.html"><i class="bi bi-journal-code"></i>Article Notebook</a></li><li><a href="notebooks/TCGA-preview.html"><i class="bi bi-journal-code"></i>Integrative Analysis with TCGA Data</a></li></ul></div></nav>
 </div>
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
@@ -202,139 +169,166 @@ window.Quarto = {
 
 <section id="introduction" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">1</span> Introduction</h2>
-<div id="cell-fig-timeline" class="cell" data-warning.hidden="true" data-message.hidden="true">
+</section>
+<section id="gwas-catalog-with-a-chip-seq-experiment" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="gwas-catalog-with-a-chip-seq-experiment"><span class="header-section-number">2</span> GWAS Catalog with a ChIP-Seq Experiment</h2>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-timeline" class="quarto-figure quarto-figure-center quarto-float anchored" alt="An event plot of the years of the last 8 eruptions on La Palma.">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-timeline-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="index_files/figure-html/fig-timeline-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Timeline of recent earthquakes on La Palma"><img src="index_files/figure-html/fig-timeline-1.png" class="img-fluid figure-img" alt="An event plot of the years of the last 8 eruptions on La Palma." width="576"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-timeline-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Timeline of recent earthquakes on La Palma
-</figcaption>
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-4-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
-<a class="quarto-notebook-link" id="nblink-1" href="index-preview.html#cell-fig-timeline">Source: Article Notebook</a></div>
-<p>Based on data up to and including 1971, eruptions on La Palma happen every 79.8 years on average.</p>
-<p>Studies of the magma systems feeding the volcano, such as <span class="citation" data-cites="marrero2019">Marrero et al. (<a href="#ref-marrero2019" role="doc-biblioref">2019</a>)</span>, have proposed that there are two main magma reservoirs feeding the Cumbre Vieja volcano; one in the mantle (30-40km depth) which charges and in turn feeds a shallower crustal reservoir (10-20km depth).</p>
-<p>Eight eruptions have been recorded since the late 1400s (<a href="#fig-timeline" class="quarto-xref">Figure&nbsp;1</a>).</p>
-<p>Data and methods are discussed in <a href="#sec-data-methods" class="quarto-xref">Section&nbsp;2</a>.</p>
-<p>Let <span class="math inline">\(x\)</span> denote the number of eruptions in a year. Then, <span class="math inline">\(x\)</span> can be modeled by a Poisson distribution</p>
-<p><span id="eq-poisson"><span class="math display">\[
-p(x) = \frac{e^{-\lambda} \lambda^{x}}{x !}
-\tag{1}\]</span></span></p>
-<p>where <span class="math inline">\(\lambda\)</span> is the rate of eruptions per year. Using <a href="#eq-poisson" class="quarto-xref">Equation&nbsp;1</a>, the probability of an eruption in the next <span class="math inline">\(t\)</span> years can be calculated.</p>
-<div id="tbl-history" class="quarto-float anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-history-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Recent historic eruptions on La Palma
-</figcaption>
-<div aria-describedby="tbl-history-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<table class="table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Year</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Current</td>
-<td>2021</td>
-</tr>
-<tr class="even">
-<td>Teneguía</td>
-<td>1971</td>
-</tr>
-<tr class="odd">
-<td>Nambroque</td>
-<td>1949</td>
-</tr>
-<tr class="even">
-<td>El Charco</td>
-<td>1712</td>
-</tr>
-<tr class="odd">
-<td>Volcán San Antonio</td>
-<td>1677</td>
-</tr>
-<tr class="even">
-<td>Volcán San Martin</td>
-<td>1646</td>
-</tr>
-<tr class="odd">
-<td>Tajuya near El Paso</td>
-<td>1585</td>
-</tr>
-<tr class="even">
-<td>Montaña Quemada</td>
-<td>1492</td>
-</tr>
-</tbody>
-</table>
+<a class="quarto-notebook-link" id="nblink-1" href="index-preview.html">Source: Article Notebook</a></div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>GRanges object with 1873 ranges and 7 metadata columns:
+         seqnames            ranges strand |      name     score       col
+            &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;integer&gt; &lt;logical&gt;
+     [1]     chrX   1509355-1512462      * |         5         0      &lt;NA&gt;
+     [2]     chrX 26801422-26802448      * |         6         0      &lt;NA&gt;
+     [3]    chr19 11694102-11695359      * |         1         0      &lt;NA&gt;
+     [4]    chr19   4076893-4079276      * |         4         0      &lt;NA&gt;
+     [5]     chr3 53288568-53290767      * |         9         0      &lt;NA&gt;
+     ...      ...               ...    ... .       ...       ...       ...
+  [1869]    chr19 11201120-11203985      * |      8701         0      &lt;NA&gt;
+  [1870]    chr19   2234920-2237370      * |       990         0      &lt;NA&gt;
+  [1871]     chr1 94311336-94313543      * |      4035         0      &lt;NA&gt;
+  [1872]    chr19 45690614-45691210      * |     10688         0      &lt;NA&gt;
+  [1873]    chr19   6110100-6111252      * |      2274         0      &lt;NA&gt;
+         signalValue    pValue    qValue      peak
+           &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;integer&gt;
+     [1]      157.92   310.000        32      1991
+     [2]      147.38   310.000        32       387
+     [3]       99.71   311.660        32       861
+     [4]       84.74   310.000        32      1508
+     [5]       78.20   299.505        32      1772
+     ...         ...       ...       ...       ...
+  [1869]        8.65     7.281   0.26576      2496
+  [1870]        8.65    26.258   1.99568      1478
+  [1871]        8.65    12.511   1.47237      1848
+  [1872]        8.65     6.205   0.00000       298
+  [1873]        8.65    17.356   2.01323       496
+  -------
+  seqinfo: 93 sequences (1 circular) from hg19 genome</code></pre>
 </div>
-</figure>
 </div>
-<p><a href="#tbl-history" class="quarto-xref">Table&nbsp;1</a> summarises the eruptions recorded since the colonization of the islands by Europeans in the late 1400s.</p>
-<div id="fig-map" class="quarto-figure quarto-figure-center quarto-float anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="images/la-palma-map.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Map of La Palma"><img src="images/la-palma-map.png" class="img-fluid figure-img"></a>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>AnnotationHub with 1 record
+# snapshotDate(): 2023-10-23
+# names(): AH14150
+# $dataprovider: UCSC
+# $species: Homo sapiens
+# $rdataclass: ChainFile
+# $rdatadateadded: 2014-12-15
+# $title: hg19ToHg38.over.chain.gz
+# $description: UCSC liftOver chain file from hg19 to hg38
+# $taxonomyid: 9606
+# $genome: hg19
+# $sourcetype: Chain
+# $sourceurl: http://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19To...
+# $sourcesize: NA
+# $tags: c("liftOver", "chain", "UCSC", "genome", "homology") 
+# retrieve record with 'object[["AH14150"]]' </code></pre>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Map of La Palma
-</figcaption>
-</figure>
 </div>
-<p>La Palma is one of the west most islands in the Volcanic Archipelago of the Canary Islands (<a href="#fig-map" class="quarto-xref">Figure&nbsp;2</a>).</p>
+<p>now lets overlap the gwas catalog with this experiment (ChIP-Seq data)</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 261160</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Hits object with 613 hits and 0 metadata columns:
+        queryHits subjectHits
+        &lt;integer&gt;   &lt;integer&gt;
+    [1]         6      237757
+    [2]         9      221130
+    [3]        12       25060
+    [4]        15      104699
+    [5]        15      104700
+    ...       ...         ...
+  [609]      1928      246305
+  [610]      1929      244698
+  [611]      1929      244699
+  [612]      1931      250380
+  [613]      1931      250381
+  -------
+  queryLength: 1932 / subjectLength: 268560</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="card bslib-card bslib-mb-spacing html-fill-item html-fill-container" data-bslib-card-init="" data-full-screen="false" data-require-bs-caller="card()" data-require-bs-version="5">
+<div class="card-body bslib-gap-spacing html-fill-item html-fill-container" style="margin-top:auto;margin-bottom:auto;flex:1 1 auto;">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-54b4b5d8bc48b5d78050" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-54b4b5d8bc48b5d78050">{"x":{"data":[{"orientation":"v","width":7,"base":0.55000000000000004,"x":[3.5],"y":[0.89999999999999991],"text":"n:  7<br />value: Appendicular lean mass<br />value: Appendicular lean mass","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(232,236,251,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Appendicular lean mass","legendgroup":"Appendicular lean mass","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":1.55,"x":[3.5],"y":[0.90000000000000013],"text":"n:  7<br />value: Diastolic blood pressure<br />value: Diastolic blood pressure","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(221,216,239,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Diastolic blood pressure","legendgroup":"Diastolic blood pressure","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":2.5499999999999998,"x":[3.5],"y":[0.90000000000000036],"text":"n:  7<br />value: Educational attainment<br />value: Educational attainment","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(209,193,225,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Educational attainment","legendgroup":"Educational attainment","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":3.5499999999999998,"x":[3.5],"y":[0.90000000000000036],"text":"n:  7<br />value: Lymphocyte count<br />value: Lymphocyte count","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(195,168,209,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Lymphocyte count","legendgroup":"Lymphocyte count","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":4.5499999999999998,"x":[3.5],"y":[0.90000000000000036],"text":"n:  7<br />value: Mean spheric corpuscular volume<br />value: Mean spheric corpuscular volume","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(181,143,194,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Mean spheric corpuscular volume","legendgroup":"Mean spheric corpuscular volume","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":5.5499999999999998,"x":[3.5],"y":[0.90000000000000036],"text":"n:  7<br />value: Monocyte count<br />value: Monocyte count","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(167,120,180,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Monocyte count","legendgroup":"Monocyte count","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":6.5499999999999998,"x":[3.5],"y":[0.90000000000000036],"text":"n:  7<br />value: Plateletcrit<br />value: Plateletcrit","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(155,98,167,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Plateletcrit","legendgroup":"Plateletcrit","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":7.5499999999999998,"x":[3.5],"y":[0.89999999999999947],"text":"n:  7<br />value: Reticulocyte fraction of red cells<br />value: Reticulocyte fraction of red cells","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(140,78,153,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Reticulocyte fraction of red cells","legendgroup":"Reticulocyte fraction of red cells","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":8.5500000000000007,"x":[3.5],"y":[0.89999999999999858],"text":"n:  7<br />value: Rheumatoid arthritis<br />value: Rheumatoid arthritis","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(111,76,155,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Rheumatoid arthritis","legendgroup":"Rheumatoid arthritis","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":9.5500000000000007,"x":[3.5],"y":[0.89999999999999858],"text":"n:  7<br />value: Triglyceride levels<br />value: Triglyceride levels","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(96,89,169,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Triglyceride levels","legendgroup":"Triglyceride levels","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":7,"base":10.550000000000001,"x":[3.5],"y":[0.89999999999999858],"text":"n:  7<br />value: Type 2 diabetes<br />value: Type 2 diabetes","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(85,104,184,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Type 2 diabetes","legendgroup":"Type 2 diabetes","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":8,"base":11.550000000000001,"x":[4],"y":[0.89999999999999858],"text":"n:  8<br />value: Heel bone mineral density<br />value: Heel bone mineral density","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(78,121,197,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Heel bone mineral density","legendgroup":"Heel bone mineral density","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":8,"base":12.550000000000001,"x":[4],"y":[0.89999999999999858],"text":"n:  8<br />value: Systolic blood pressure<br />value: Systolic blood pressure","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(77,138,198,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Systolic blood pressure","legendgroup":"Systolic blood pressure","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":9,"base":13.550000000000001,"x":[4.5],"y":[0.89999999999999858],"text":"n:  9<br />value: Sex hormone-binding globulin levels<br />value: Sex hormone-binding globulin levels","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(78,150,188,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Sex hormone-binding globulin levels","legendgroup":"Sex hormone-binding globulin levels","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":14.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: Eosinophil counts<br />value: Eosinophil counts","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(84,158,179,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Eosinophil counts","legendgroup":"Eosinophil counts","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":15.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: HDL cholesterol levels<br />value: HDL cholesterol levels","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(89,165,169,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"HDL cholesterol levels","legendgroup":"HDL cholesterol levels","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":16.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: Hematocrit<br />value: Hematocrit","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(96,171,158,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Hematocrit","legendgroup":"Hematocrit","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":17.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: Platelet count<br />value: Platelet count","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(105,177,144,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Platelet count","legendgroup":"Platelet count","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":18.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: Total cholesterol levels<br />value: Total cholesterol levels","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(119,183,125,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Total cholesterol levels","legendgroup":"Total cholesterol levels","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":19.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: Waist-to-hip ratio adjusted for BMI<br />value: Waist-to-hip ratio adjusted for BMI","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(140,188,104,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Waist-to-hip ratio adjusted for BMI","legendgroup":"Waist-to-hip ratio adjusted for BMI","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":10,"base":20.550000000000001,"x":[5],"y":[0.89999999999999858],"text":"n: 10<br />value: White blood cell count<br />value: White blood cell count","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(166,190,84,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"White blood cell count","legendgroup":"White blood cell count","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":11,"base":21.550000000000001,"x":[5.5],"y":[0.89999999999999858],"text":"n: 11<br />value: High density lipoprotein cholesterol levels<br />value: High density lipoprotein cholesterol levels","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(190,188,72,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"High density lipoprotein cholesterol levels","legendgroup":"High density lipoprotein cholesterol levels","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":13,"base":22.550000000000001,"x":[6.5],"y":[0.89999999999999858],"text":"n: 13<br />value: Multi-trait sex score<br />value: Multi-trait sex score","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(209,181,65,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Multi-trait sex score","legendgroup":"Multi-trait sex score","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":14,"base":23.550000000000001,"x":[7],"y":[0.89999999999999858],"text":"n: 14<br />value: Body mass index<br />value: Body mass index","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(221,170,60,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Body mass index","legendgroup":"Body mass index","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":15,"base":24.550000000000001,"x":[7.5],"y":[0.89999999999999858],"text":"n: 15<br />value: Red cell distribution width<br />value: Red cell distribution width","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(228,156,57,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Red cell distribution width","legendgroup":"Red cell distribution width","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":16,"base":25.550000000000001,"x":[8],"y":[0.89999999999999858],"text":"n: 16<br />value: Mean corpuscular volume<br />value: Mean corpuscular volume","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(231,140,53,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Mean corpuscular volume","legendgroup":"Mean corpuscular volume","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":18,"base":26.550000000000001,"x":[9],"y":[0.89999999999999858],"text":"n: 18<br />value: Red blood cell count<br />value: Red blood cell count","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(230,121,50,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Red blood cell count","legendgroup":"Red blood cell count","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":25,"base":27.550000000000001,"x":[12.5],"y":[0.89999999999999858],"text":"n: 25<br />value: Mean corpuscular hemoglobin<br />value: Mean corpuscular hemoglobin","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(228,99,45,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Mean corpuscular hemoglobin","legendgroup":"Mean corpuscular hemoglobin","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":48,"base":28.550000000000001,"x":[24],"y":[0.89999999999999858],"text":"n: 48<br />value: Height<br />value: Height","type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(223,72,40,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"name":"Height","legendgroup":"Height","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":26.228310502283104,"r":7.3059360730593621,"b":40.182648401826491,"l":276.89497716894988},"font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-2.4000000000000004,50.399999999999999],"tickmode":"array","ticktext":["0","10","20","30","40","50"],"tickvals":[0,10,20,30,40,50],"categoryorder":"array","categoryarray":["0","10","20","30","40","50"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"y","title":{"text":"n","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,29.600000000000001],"tickmode":"array","ticktext":["Appendicular lean mass","Diastolic blood pressure","Educational attainment","Lymphocyte count","Mean spheric corpuscular volume","Monocyte count","Plateletcrit","Reticulocyte fraction of red cells","Rheumatoid arthritis","Triglyceride levels","Type 2 diabetes","Heel bone mineral density","Systolic blood pressure","Sex hormone-binding globulin levels","Eosinophil counts","HDL cholesterol levels","Hematocrit","Platelet count","Total cholesterol levels","Waist-to-hip ratio adjusted for BMI","White blood cell count","High density lipoprotein cholesterol levels","Multi-trait sex score","Body mass index","Red cell distribution width","Mean corpuscular volume","Red blood cell count","Mean corpuscular hemoglobin","Height"],"tickvals":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29],"categoryorder":"array","categoryarray":["Appendicular lean mass","Diastolic blood pressure","Educational attainment","Lymphocyte count","Mean spheric corpuscular volume","Monocyte count","Plateletcrit","Reticulocyte fraction of red cells","Rheumatoid arthritis","Triglyceride levels","Type 2 diabetes","Heel bone mineral density","Systolic blood pressure","Sex hormone-binding globulin levels","Eosinophil counts","HDL cholesterol levels","Hematocrit","Platelet count","Total cholesterol levels","Waist-to-hip ratio adjusted for BMI","White blood cell count","High density lipoprotein cholesterol levels","Multi-trait sex score","Body mass index","Red cell distribution width","Mean corpuscular volume","Red blood cell count","Mean corpuscular hemoglobin","Height"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"x","title":{"text":"value","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"value","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"34707fae61a1":{"x":{},"y":{},"fill":{},"type":"bar"}},"cur_data":"34707fae61a1","visdat":{"34707fae61a1":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+<template>Expand</template>
+<span class="bslib-full-screen-enter badge rounded-pill"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;fill:currentColor;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg></span>
+</bslib-tooltip>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script>
+</div>
+</div>
+</div>
+<p>distinct phenotypes identified on the peaks</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 613</code></pre>
+</div>
+</div>
+<p>how to do the inference of these phenotype on peaks of these b cells</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+</section>
+<section id="sec-data-methods" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="sec-data-methods"><span class="header-section-number">3</span> Data &amp; Methods</h2>
 <div class="quarto-embed-nb-cell">
-<div id="cell-fig-spatial-plot" class="cell" data-message.hidden="true" data-warning.hidden="true">
+<div id="cell-fig-genesmut" class="cell">
 <div class="cell-output cell-output-display">
-<div id="fig-spatial-plot" class="quarto-figure quarto-figure-center quarto-float anchored" alt="A scatterplot of earthquake locations plotting latitude against longitude.">
+<div id="fig-genesmut" class="quarto-figure quarto-figure-center quarto-float anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-spatial-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="index_files/figure-html/notebooks-explore-earthquakes-fig-spatial-plot-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Locations of earthquakes on La Palma since 2017"><img src="index_files/figure-html/notebooks-explore-earthquakes-fig-spatial-plot-output-1.png" class="img-fluid figure-img" alt="A scatterplot of earthquake locations plotting latitude against longitude."></a>
+<div aria-describedby="fig-genesmut-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="index_files/figure-html/notebooks-TCGA-fig-genesmut-output-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;1: "><img src="index_files/figure-html/notebooks-TCGA-fig-genesmut-output-2.png" id="fig-genesmut" class="img-fluid figure-img"></a>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-spatial-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Locations of earthquakes on La Palma since 2017
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-genesmut-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </div>
-<p><a href="#fig-spatial-plot" class="quarto-xref">Figure&nbsp;3</a> shows the location of recent Earthquakes on La Palma.</p>
 </section>
-<section id="sec-data-methods" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="sec-data-methods"><span class="header-section-number">2</span> Data &amp; Methods</h2>
-</section>
-<section id="conclusion" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">3</span> Conclusion</h2>
+<section id="conclusion" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">4</span> Conclusion</h2>
 </section>
 <section id="references" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-marrero2019" class="csl-entry" role="listitem">
-Marrero, José, Alicia García, Manuel Berrocoso, Ángeles Llinares, Antonio Rodríguez-Losada, and R. Ortiz. 2019. <span>“Strategies for the Development of Volcanic Hazard Maps in Monogenetic Volcanic Fields: The Example of <span>La</span> <span>Palma</span> (<span>Canary</span> <span>Islands</span>).”</span> <em>Journal of Applied Volcanology</em> 8 (July). <a href="https://doi.org/10.1186/s13617-019-0085-5">https://doi.org/10.1186/s13617-019-0085-5</a>.
-</div>
+<div id="refs" role="list">
+
 </div>
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{purves2024,
-  author = {Purves, Steve and Cockett, Rowan},
-  title = {La {Palma} {Earthquakes}},
-  date = {2024-03-13},
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{palacios bernuy2024,
+  author = {Palacios Bernuy, Piero},
+  title = {Integrative {Analysis} of {Multi-omic} {Data}},
+  date = {2024-03-15},
   langid = {en},
-  abstract = {In September 2021, a significant jump in seismic activity
-    on the island of La Palma (Canary Islands, Spain) signaled the start
-    of a volcanic crisis that still continues at the time of writing.
-    Earthquake data is continually collected and published by the
-    Instituto Geográphico Nacional (IGN). ...}
+  abstract = {This document is part of a series of the analysis of Omics
+    data. Especifically, here is showed how to analyze bulk RNA-Seq data
+    with Bioconductor packages. Also, it’s showcased how to make plots
+    of the RNA data in the context of differentially gene expression and
+    gene-sets.}
 }
-</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-purves2024" class="csl-entry quarto-appendix-citeas" role="listitem">
-Purves, Steve, and Rowan Cockett. 2024. <span>“La Palma
-Earthquakes.”</span> Earth and Space Science. March 13, 2024.
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-palacios bernuy2024" class="csl-entry quarto-appendix-citeas" role="listitem">
+Palacios Bernuy, Piero. 2024. <span>“Integrative Analysis of Multi-Omic
+Data.”</span> An Open Source Portfolio. March 15, 2024.
 </div></div></section></div></main>
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -747,7 +741,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","descPosition":"bottom","openEffect":"zoom","loop":false,"closeEffect":"zoom"});
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","closeEffect":"zoom","loop":false,"descPosition":"bottom","selector":".lightbox"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
