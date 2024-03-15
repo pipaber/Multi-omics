@@ -1583,47 +1583,79 @@ rs9839873           NA          NA                  0</code></pre>
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb181"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb181-1"><a href="#cb181-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb181-2"><a href="#cb181-2" aria-hidden="true" tabindex="-1"></a>me_rna_cor <span class="ot">=</span> <span class="cf">function</span>(sym, <span class="at">mpick =</span> <span class="dv">3</span>){</span>
-<span id="cb181-3"><a href="#cb181-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset methylation data to first mpick methylation sites for given gene symbol</span></span>
-<span id="cb181-4"><a href="#cb181-4" aria-hidden="true" tabindex="-1"></a>    methyl_ind <span class="ot">=</span> <span class="fu">which</span>(methyl_genes<span class="sc">$</span>Gene_Symbol <span class="sc">==</span> sym)</span>
-<span id="cb181-5"><a href="#cb181-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(methyl_ind) <span class="sc">&gt;</span> mpick){    </span>
-<span id="cb181-6"><a href="#cb181-6" aria-hidden="true" tabindex="-1"></a>        methyl_ind <span class="ot">=</span> methyl_ind[<span class="dv">1</span><span class="sc">:</span>mpick]</span>
-<span id="cb181-7"><a href="#cb181-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb181-8"><a href="#cb181-8" aria-hidden="true" tabindex="-1"></a>    methyl_dat <span class="ot">=</span> <span class="fu">assay</span>(methyl_subset)[methyl_ind,]    <span class="co"># subset to selected methylation sites</span></span>
-<span id="cb181-9"><a href="#cb181-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb181-10"><a href="#cb181-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset expression data to selected gene symbol</span></span>
-<span id="cb181-11"><a href="#cb181-11" aria-hidden="true" tabindex="-1"></a>    expr_ind <span class="ot">=</span> <span class="fu">which</span>(<span class="fu">rownames</span>(rnaseq_subset) <span class="sc">==</span> sym)    </span>
-<span id="cb181-12"><a href="#cb181-12" aria-hidden="true" tabindex="-1"></a>    expr_dat <span class="ot">=</span> <span class="fu">assay</span>(rnaseq_subset)[expr_ind,]</span>
-<span id="cb181-13"><a href="#cb181-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb181-14"><a href="#cb181-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine methylation and expression data as data frame</span></span>
-<span id="cb181-15"><a href="#cb181-15" aria-hidden="true" tabindex="-1"></a>    combined_dat <span class="ot">=</span> <span class="fu">as</span>(<span class="fu">t</span>(methyl_dat), <span class="st">"DataFrame"</span>)</span>
-<span id="cb181-16"><a href="#cb181-16" aria-hidden="true" tabindex="-1"></a>    combined_dat<span class="sc">$</span>expr <span class="ot">=</span> expr_dat</span>
-<span id="cb181-17"><a href="#cb181-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb181-18"><a href="#cb181-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot pairs and calculate correlation coefficients between methylation and expression</span></span>
-<span id="cb181-19"><a href="#cb181-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pairs</span>(combined_dat) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
-<span id="cb181-20"><a href="#cb181-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span>mpick, <span class="cf">function</span>(i){</span>
-<span id="cb181-21"><a href="#cb181-21" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb181-22"><a href="#cb181-22" aria-hidden="true" tabindex="-1"></a>        cor_to <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(combined_dat[,mpick<span class="sc">+</span><span class="dv">1</span>])</span>
-<span id="cb181-23"><a href="#cb181-23" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb181-24"><a href="#cb181-24" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">v1=</span> <span class="fu">as.numeric</span>(combined_dat[,i]),</span>
-<span id="cb181-25"><a href="#cb181-25" aria-hidden="true" tabindex="-1"></a>                         <span class="at">v2 =</span> cor_to)</span>
-<span id="cb181-26"><a href="#cb181-26" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb181-27"><a href="#cb181-27" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> <span class="fu">na.omit</span>()</span>
-<span id="cb181-28"><a href="#cb181-28" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb181-29"><a href="#cb181-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cor</span>(df[,<span class="dv">1</span>], df[,<span class="dv">2</span>])</span>
-<span id="cb181-30"><a href="#cb181-30" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb181-31"><a href="#cb181-31" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb181-32"><a href="#cb181-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb181-33"><a href="#cb181-33" aria-hidden="true" tabindex="-1"></a><span class="fu">me_rna_cor</span>(<span class="st">"TAC1"</span>, <span class="at">mpick=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb181-3"><a href="#cb181-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">require</span>(GGally)</span>
+<span id="cb181-4"><a href="#cb181-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset methylation data to first mpick methylation sites for given gene symbol</span></span>
+<span id="cb181-5"><a href="#cb181-5" aria-hidden="true" tabindex="-1"></a>    methyl_ind <span class="ot">=</span> <span class="fu">which</span>(methyl_genes<span class="sc">$</span>Gene_Symbol <span class="sc">==</span> sym)</span>
+<span id="cb181-6"><a href="#cb181-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(methyl_ind) <span class="sc">&gt;</span> mpick){    </span>
+<span id="cb181-7"><a href="#cb181-7" aria-hidden="true" tabindex="-1"></a>        methyl_ind <span class="ot">=</span> methyl_ind[<span class="dv">1</span><span class="sc">:</span>mpick]</span>
+<span id="cb181-8"><a href="#cb181-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb181-9"><a href="#cb181-9" aria-hidden="true" tabindex="-1"></a>    methyl_dat <span class="ot">=</span> <span class="fu">assay</span>(methyl_subset)[methyl_ind,]    <span class="co"># subset to selected methylation sites</span></span>
+<span id="cb181-10"><a href="#cb181-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-11"><a href="#cb181-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset expression data to selected gene symbol</span></span>
+<span id="cb181-12"><a href="#cb181-12" aria-hidden="true" tabindex="-1"></a>    expr_ind <span class="ot">=</span> <span class="fu">which</span>(<span class="fu">rownames</span>(rnaseq_subset) <span class="sc">==</span> sym)    </span>
+<span id="cb181-13"><a href="#cb181-13" aria-hidden="true" tabindex="-1"></a>    expr_dat <span class="ot">=</span> <span class="fu">assay</span>(rnaseq_subset)[expr_ind,]</span>
+<span id="cb181-14"><a href="#cb181-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-15"><a href="#cb181-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine methylation and expression data as data frame</span></span>
+<span id="cb181-16"><a href="#cb181-16" aria-hidden="true" tabindex="-1"></a>    combined_dat <span class="ot">=</span> <span class="fu">as</span>(<span class="fu">t</span>(methyl_dat), <span class="st">"DataFrame"</span>)</span>
+<span id="cb181-17"><a href="#cb181-17" aria-hidden="true" tabindex="-1"></a>    combined_dat<span class="sc">$</span>expr <span class="ot">=</span> expr_dat</span>
+<span id="cb181-18"><a href="#cb181-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-19"><a href="#cb181-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot pairs and calculate correlation coefficients between methylation and expression</span></span>
+<span id="cb181-20"><a href="#cb181-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggpairs</span>(combined_dat) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
+<span id="cb181-21"><a href="#cb181-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span>mpick, <span class="cf">function</span>(i){</span>
+<span id="cb181-22"><a href="#cb181-22" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb181-23"><a href="#cb181-23" aria-hidden="true" tabindex="-1"></a>        cor_to <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(combined_dat[,mpick<span class="sc">+</span><span class="dv">1</span>])</span>
+<span id="cb181-24"><a href="#cb181-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb181-25"><a href="#cb181-25" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">v1=</span> <span class="fu">as.numeric</span>(combined_dat[,i]),</span>
+<span id="cb181-26"><a href="#cb181-26" aria-hidden="true" tabindex="-1"></a>                         <span class="at">v2 =</span> cor_to)</span>
+<span id="cb181-27"><a href="#cb181-27" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb181-28"><a href="#cb181-28" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> <span class="fu">na.omit</span>()</span>
+<span id="cb181-29"><a href="#cb181-29" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb181-30"><a href="#cb181-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cor</span>(df[,<span class="dv">1</span>], df[,<span class="dv">2</span>])</span>
+<span id="cb181-31"><a href="#cb181-31" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb181-32"><a href="#cb181-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb181-33"><a href="#cb181-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-34"><a href="#cb181-34" aria-hidden="true" tabindex="-1"></a><span class="fu">me_rna_cor</span>(<span class="st">"TAC1"</span>, <span class="at">mpick=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: GGally</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'GGally' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'GGally':
+  method from   
+  +.gg   ggplot2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+Removed 5 rows containing missing values</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+Removed 5 rows containing missing values
+
+Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+Removed 5 rows containing missing values</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 5 rows containing non-finite outside the scale range
+(`stat_density()`).</code></pre>
+</div>
 <div class="cell-output-display">
 <div class="">
 <figure class="figure">
 <p class=""><a href="TCGA_files/figure-html/unnamed-chunk-29-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="TCGA_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="2700"></a></p>
 </figure>
 </div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>NULL</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.0410095 0.1457715 0.0856926</code></pre>
@@ -2039,7 +2071,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","loop":false,"openEffect":"zoom"});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","loop":false,"descPosition":"bottom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
