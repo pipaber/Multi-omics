@@ -356,6 +356,7 @@ methyl_genes
 #| label: fig-plot
 
 me_rna_cor = function(sym, mpick = 3){
+    require(GGally)
     # subset methylation data to first mpick methylation sites for given gene symbol
     methyl_ind = which(methyl_genes$Gene_Symbol == sym)
     if (length(methyl_ind) > mpick){    
@@ -372,7 +373,7 @@ me_rna_cor = function(sym, mpick = 3){
     combined_dat$expr = expr_dat
 
     # plot pairs and calculate correlation coefficients between methylation and expression
-    pairs(combined_dat) |> print()
+    ggpairs(combined_dat) |> print()
     sapply(1:mpick, function(i){
       
         cor_to <- as.numeric(combined_dat[,mpick+1])
