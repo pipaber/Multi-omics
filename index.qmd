@@ -26,6 +26,8 @@ bibliography: references.bib
 citation:
   container-title: An open source portfolio
 number-sections: true
+execute: 
+  echo: true
 ---
 
 ## Introduction
@@ -72,12 +74,16 @@ Now, let's plot a karyogram that will show the SNP's identified with significant
 ggbio::autoplot(gg, layout="karyogram")
 ```
 
+We can see the peak data as a `GRanges` object: 
+
 ```{r}
 data("GM12878")
 
 GM12878
 
 ```
+
+If we see the bootom of the GRanges table, this experiment have the hg19 annotation from the human genome. To work on the GRCh38 annotation we need to liftover with a `.chain` file. For this we can use the `AnnotationHub` package.
 
 ```{r}
 library(AnnotationHub)
@@ -102,7 +108,7 @@ seqlevelsStyle(GM12878) <- "UCSC"
 seqlevelsStyle(gg) <- "UCSC"
 ```
 
-now lets overlap the gwas catalog with this experiment (ChIP-Seq data)
+Now lets find overlaps between the GWAS catalog and the ChIP-Seq experiment.
 
 ```{r}
 # duplicated loci
