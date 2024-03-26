@@ -200,7 +200,7 @@ mean(rsc > length(fo))
 
 
 
-##Explore the TCGA
+## Explore the TCGA
 
 Please check the script below the image to see how to explore and get insights from the TCGA (The Cancer Genome Atlas) database.
 
