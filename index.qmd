@@ -19,8 +19,8 @@ abstract: |
 plain-language-summary: |
   This document have a example of the analysis of bulk RNA-Seq data.
 key-points:
-  - A guide to analyze bulk RNA-Seq data.
-  - A guide to gene-sets analysis.
+  - A guide to analyze GWAS public data.
+  - A guide to analyze TCGA database.
 date: last-modified
 bibliography: references.bib
 citation:
@@ -30,12 +30,12 @@ number-sections: true
 
 ## Introduction
 
-```{r}
-
-```
 
 
 ## GWAS Catalog with a ChIP-Seq Experiment
+
+Here,  we are gonna analyze the relation between transcription factor binding (ESRRA binding data) from a ChIP-Seq experiment and the genome-wide associations between DNA variants and phenotypes like diseases. For this task, we are gonna use a the `gwascat` package distributed by the **EMBL** (European Molecular Biology Laboratories).
+
 
 ```{r}
 library(tidyverse)
@@ -45,6 +45,7 @@ library(ERBS)
 library(liftOver)
 ```
 
+First, we need to download the data, keep the 24 chromosomes (from 1 to Y) and, specify the sequence information from the GRCh38 human genome annotation.
 
 ```{r}
 
@@ -64,6 +65,8 @@ data("si.hs.38")
 seqinfo(gg) <- si.hs.38
 
 ```
+
+Now, let's plot a karyogram that will show the SNP's identified with significant associations with a phenotype. The SNP's in the GWAS catalog have a stringent criterion of significance and there has been a replication of the finding from a independent population.
 
 ```{r}
 ggbio::autoplot(gg, layout="karyogram")
