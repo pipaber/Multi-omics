@@ -206,6 +206,8 @@ Please check the script below the image to see how to explore and get insights f
 
 {{< embed notebooks/TCGA.qmd#fig-genesmut >}}
 
+{{< embed notebooks/TCGA.qmd#fig-plot1 >}}
+
 
 ## Conclusion
 
