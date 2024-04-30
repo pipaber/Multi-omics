@@ -13,8 +13,6 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
   dpi = 180,
-  fig.width = 15,
-  fig.height = 8,
   echo = TRUE
 )
 
@@ -221,3 +219,6 @@ head(var_class_df)
 ```
 
 We can visualize the most common mutated genes genes in rectum adenocarcinoma
+
+
+
