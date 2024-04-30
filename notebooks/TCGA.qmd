@@ -406,7 +406,7 @@ methyl_genes
 
 ```{r}
 
-#| label: fig-plot
+#| label: figplot
 
 me_rna_cor = function(sym, mpick = 3){
     require(GGally)

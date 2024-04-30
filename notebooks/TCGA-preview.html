@@ -212,6 +212,9 @@
   <li><a href="#download-the-data" id="toc-download-the-data" class="nav-link" data-scroll-target="#download-the-data">Download the Data</a></li>
   <li><a href="#review-the-clinical-metadata" id="toc-review-the-clinical-metadata" class="nav-link" data-scroll-target="#review-the-clinical-metadata">Review the Clinical Metadata</a></li>
   <li><a href="#analyzing-mutation-data" id="toc-analyzing-mutation-data" class="nav-link" data-scroll-target="#analyzing-mutation-data">Analyzing Mutation Data</a></li>
+  <li><a href="#linking-expression-and-tumor-stage" id="toc-linking-expression-and-tumor-stage" class="nav-link" data-scroll-target="#linking-expression-and-tumor-stage">Linking expression and tumor stage</a></li>
+  <li><a href="#linking-methylation-and-expression" id="toc-linking-methylation-and-expression" class="nav-link" data-scroll-target="#linking-methylation-and-expression">Linking methylation and expression</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
 </div>
@@ -1300,6 +1303,250 @@ Somatic
 </figure>
 </div>
 </section>
+<section id="linking-expression-and-tumor-stage" class="level2">
+<h2 class="anchored" data-anchor-id="linking-expression-and-tumor-stage">Linking expression and tumor stage</h2>
+<div class="cell-container"><div class="cell-decorator"><pre>In [22]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb164"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb164-1"><a href="#cb164-1" aria-hidden="true" tabindex="-1"></a>rnaseq <span class="ot">=</span> readData[[<span class="dv">2</span>]]</span>
+<span id="cb164-2"><a href="#cb164-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb164-3"><a href="#cb164-3" aria-hidden="true" tabindex="-1"></a>rnaseq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class: SummarizedExperiment 
+dim: 18115 177 
+metadata(3): filename build platform
+assays(1): ''
+rownames(18115): A1BG A1CF ... ZZZ3 psiTPTE22
+rowData names(0):
+colnames(177): TCGA-AF-2687-01 TCGA-AF-2689-11 ... TCGA-AG-A032-01
+  TCGA-AG-A036-01
+colData names(0):</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [23]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb166"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb166-1"><a href="#cb166-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rnaseq) <span class="ot">=</span> <span class="fu">colnames</span>(rnaseq) <span class="sc">|&gt;</span> </span>
+<span id="cb166-2"><a href="#cb166-2" aria-hidden="true" tabindex="-1"></a>  stringr<span class="sc">::</span><span class="fu">str_sub</span>(<span class="dv">1</span>,<span class="dv">12</span>)</span>
+<span id="cb166-3"><a href="#cb166-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-4"><a href="#cb166-4" aria-hidden="true" tabindex="-1"></a>clin <span class="ot">&lt;-</span> clin <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb166-5"><a href="#cb166-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(clin) <span class="ot">&lt;-</span> clin<span class="sc">$</span>patientID</span>
+<span id="cb166-6"><a href="#cb166-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-7"><a href="#cb166-7" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">colnames</span>(rnaseq) <span class="sc">%in%</span> <span class="fu">rownames</span>(clin))</span>
+<span id="cb166-8"><a href="#cb166-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-9"><a href="#cb166-9" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(rnaseq) <span class="ot">=</span> <span class="fu">as</span>(clin[<span class="fu">colnames</span>(rnaseq),],<span class="st">"DataFrame"</span>)</span>
+<span id="cb166-10"><a href="#cb166-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-11"><a href="#cb166-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-12"><a href="#cb166-12" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">is.na</span>(<span class="fu">colData</span>(rnaseq)<span class="sc">$</span>t_stage)</span>
+<span id="cb166-13"><a href="#cb166-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-14"><a href="#cb166-14" aria-hidden="true" tabindex="-1"></a>rnaseq <span class="ot">&lt;-</span> rnaseq[,<span class="sc">!</span>idx]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [24]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb167"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(limma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'limma' was built under R version 4.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'limma'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:BiocGenerics':
+
+    plotMA</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb171"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1" aria-hidden="true" tabindex="-1"></a>mm <span class="ot">=</span> <span class="fu">model.matrix</span>(<span class="sc">~</span>t_stage, <span class="at">data=</span><span class="fu">colData</span>(rnaseq))</span>
+<span id="cb171-2"><a href="#cb171-2" aria-hidden="true" tabindex="-1"></a>f1 <span class="ot">=</span> <span class="fu">lmFit</span>(<span class="fu">assay</span>(rnaseq), mm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Partial NA coefficients for 5 probe(s)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a>ef1 <span class="ot">=</span> <span class="fu">eBayes</span>(f1)</span>
+<span id="cb173-2"><a href="#cb173-2" aria-hidden="true" tabindex="-1"></a><span class="fu">topTable</span>(ef1) <span class="sc">|&gt;</span> </span>
+<span id="cb173-3"><a href="#cb173-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(AveExpr))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Removing intercept from test coefficients</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           t_staget2   t_staget3  t_staget4     AveExpr         F      P.Value
+PAM       -0.5791836  0.08813521  0.4984790 10.94216940  8.309141 3.409613e-05
+PAIP2     -0.3240061  0.18551765  0.0958645 10.29398797  9.056896 1.331550e-05
+SPP1      -0.3352086  1.56339367  2.6409082  9.61423581  9.316731 9.621982e-06
+NIPSNAP3A -0.9988818 -0.35051776 -0.6085837  9.38910637  8.712515 2.051165e-05
+ASPN      -0.7366657  0.75340984  1.9537316  7.45952050  8.323019 3.350393e-05
+OLR1      -0.2557879  1.39542897  2.1822156  4.97144475  8.531715 2.597133e-05
+SEMA5B     1.3576218  1.27252058  1.9271042  4.60337761  8.091237 4.490926e-05
+CPSF4L     1.0629502 -0.17984587 -1.4274556  0.70036223  8.955085 2.311056e-05
+GRM5       1.3027501 -0.14596612 -0.7395609  0.06134539 10.268851 7.301656e-06
+C1orf223   0.7830779 -0.40735736 -0.7062534 -0.35136703  9.681632 1.743477e-05
+           adj.P.Val
+PAM       0.06860899
+PAIP2     0.06719153
+SPP1      0.06719153
+NIPSNAP3A 0.06719153
+ASPN      0.06860899
+OLR1      0.06719153
+SEMA5B    0.07597995
+CPSF4L    0.06719153
+GRM5      0.06719153
+C1orf223  0.06719153</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [25]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb176"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb176-1"><a href="#cb176-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb176-2"><a href="#cb176-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(<span class="fu">split</span>(<span class="fu">assay</span>(rnaseq)[<span class="st">"PAM"</span>,], rnaseq<span class="sc">$</span>t_stage), <span class="at">main=</span><span class="st">"PAM"</span>)    <span class="co"># higher expression in lower t_stage</span></span>
+<span id="cb176-3"><a href="#cb176-3" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(<span class="fu">split</span>(<span class="fu">assay</span>(rnaseq)[<span class="st">"PAIP2"</span>,], rnaseq<span class="sc">$</span>t_stage), <span class="at">main=</span><span class="st">"PAIP2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="">
+<figure class="figure">
+<p class=""><a href="TCGA_files/figure-html/unnamed-chunk-25-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="TCGA_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="1260"></a></p>
+</figure>
+</div>
+</div>
+</div></div>
+</section>
+<section id="linking-methylation-and-expression" class="level2">
+<h2 class="anchored" data-anchor-id="linking-methylation-and-expression">Linking methylation and expression</h2>
+<div class="cell-container"><div class="cell-decorator"><pre>In [26]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a>methyl <span class="ot">&lt;-</span> readData[[<span class="dv">3</span>]]</span>
+<span id="cb177-2"><a href="#cb177-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-3"><a href="#cb177-3" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">colnames</span>(methyl) <span class="sc">|&gt;</span> </span>
+<span id="cb177-4"><a href="#cb177-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split</span>(<span class="at">pattern =</span> <span class="st">"-"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb177-5"><a href="#cb177-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="dv">4</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb177-6"><a href="#cb177-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">enframe</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb177-7"><a href="#cb177-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(value)</span>
+<span id="cb177-8"><a href="#cb177-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-9"><a href="#cb177-9" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">which</span>(idx<span class="sc">$</span>value <span class="sc">==</span> <span class="st">"01A"</span>)</span>
+<span id="cb177-10"><a href="#cb177-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-11"><a href="#cb177-11" aria-hidden="true" tabindex="-1"></a>methyl <span class="ot">=</span> methyl[,idx]</span>
+<span id="cb177-12"><a href="#cb177-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-13"><a href="#cb177-13" aria-hidden="true" tabindex="-1"></a>methyl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class: SummarizedExperiment 
+dim: 485577 95 
+metadata(0):
+assays(1): counts
+rownames(485577): cg00000029 cg00000108 ... rs966367 rs9839873
+rowData names(3): Gene_Symbol Chromosome Genomic_Coordinate
+colnames(95): TCGA-AF-2687-01A-02D-1734-05 TCGA-AF-2690-01A-02D-1734-05
+  ... TCGA-G5-6572-01A-11D-1828-05 TCGA-G5-6641-01A-11D-1828-05
+colData names(0):</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [27]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(methyl) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(methyl) <span class="sc">|&gt;</span> </span>
+<span id="cb179-2"><a href="#cb179-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_sub</span>(<span class="at">start =</span> <span class="dv">1</span>,<span class="at">end =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [28]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb180"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb180-1"><a href="#cb180-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(methyl) <span class="ot">&lt;-</span> <span class="fu">as</span>(clin[<span class="fu">colnames</span>(methyl),],<span class="st">"DataFrame"</span>)</span>
+<span id="cb180-2"><a href="#cb180-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-3"><a href="#cb180-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-4"><a href="#cb180-4" aria-hidden="true" tabindex="-1"></a><span class="fu">intersect</span>(<span class="fu">colnames</span>(methyl), <span class="fu">colnames</span>(rnaseq)) <span class="sc">|&gt;</span> <span class="fu">length</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 93</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [29]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb182"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb182-1"><a href="#cb182-1" aria-hidden="true" tabindex="-1"></a>methyl_subset <span class="ot">=</span> methyl[,<span class="fu">which</span>(<span class="fu">colnames</span>(methyl) <span class="sc">%in%</span> <span class="fu">colnames</span>(rnaseq))]</span>
+<span id="cb182-2"><a href="#cb182-2" aria-hidden="true" tabindex="-1"></a>rnaseq_subset <span class="ot">=</span> rnaseq[,<span class="fu">which</span>(<span class="fu">colnames</span>(rnaseq) <span class="sc">%in%</span> <span class="fu">colnames</span>(methyl))]</span>
+<span id="cb182-3"><a href="#cb182-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb182-4"><a href="#cb182-4" aria-hidden="true" tabindex="-1"></a>methyl_genes <span class="ot">=</span> <span class="fu">rowData</span>(methyl_subset)</span>
+<span id="cb182-5"><a href="#cb182-5" aria-hidden="true" tabindex="-1"></a>methyl_genes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 485577 rows and 3 columns
+           Gene_Symbol  Chromosome Genomic_Coordinate
+           &lt;character&gt; &lt;character&gt;        &lt;character&gt;
+cg00000029        RBL2          16           53468112
+cg00000108     C3orf35           3           37459206
+cg00000109      FNDC3B           3          171916037
+cg00000165          NA           1           91194674
+cg00000236       VDAC3           8           42263294
+...                ...         ...                ...
+rs9363764           NA          NA                  0
+rs939290            NA          NA                  0
+rs951295            NA          NA                  0
+rs966367            NA          NA                  0
+rs9839873           NA          NA                  0</code></pre>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [30]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb184"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb184-1"><a href="#cb184-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb184-2"><a href="#cb184-2" aria-hidden="true" tabindex="-1"></a>me_rna_cor <span class="ot">=</span> <span class="cf">function</span>(sym, <span class="at">mpick =</span> <span class="dv">3</span>){</span>
+<span id="cb184-3"><a href="#cb184-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">require</span>(GGally)</span>
+<span id="cb184-4"><a href="#cb184-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset methylation data to first mpick methylation sites for given gene symbol</span></span>
+<span id="cb184-5"><a href="#cb184-5" aria-hidden="true" tabindex="-1"></a>    methyl_ind <span class="ot">=</span> <span class="fu">which</span>(methyl_genes<span class="sc">$</span>Gene_Symbol <span class="sc">==</span> sym)</span>
+<span id="cb184-6"><a href="#cb184-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(methyl_ind) <span class="sc">&gt;</span> mpick){    </span>
+<span id="cb184-7"><a href="#cb184-7" aria-hidden="true" tabindex="-1"></a>        methyl_ind <span class="ot">=</span> methyl_ind[<span class="dv">1</span><span class="sc">:</span>mpick]</span>
+<span id="cb184-8"><a href="#cb184-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb184-9"><a href="#cb184-9" aria-hidden="true" tabindex="-1"></a>    methyl_dat <span class="ot">=</span> <span class="fu">assay</span>(methyl_subset)[methyl_ind,]    <span class="co"># subset to selected methylation sites</span></span>
+<span id="cb184-10"><a href="#cb184-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb184-11"><a href="#cb184-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># subset expression data to selected gene symbol</span></span>
+<span id="cb184-12"><a href="#cb184-12" aria-hidden="true" tabindex="-1"></a>    expr_ind <span class="ot">=</span> <span class="fu">which</span>(<span class="fu">rownames</span>(rnaseq_subset) <span class="sc">==</span> sym)    </span>
+<span id="cb184-13"><a href="#cb184-13" aria-hidden="true" tabindex="-1"></a>    expr_dat <span class="ot">=</span> <span class="fu">assay</span>(rnaseq_subset)[expr_ind,]</span>
+<span id="cb184-14"><a href="#cb184-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb184-15"><a href="#cb184-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine methylation and expression data as data frame</span></span>
+<span id="cb184-16"><a href="#cb184-16" aria-hidden="true" tabindex="-1"></a>    combined_dat <span class="ot">=</span> <span class="fu">as</span>(<span class="fu">t</span>(methyl_dat), <span class="st">"DataFrame"</span>)</span>
+<span id="cb184-17"><a href="#cb184-17" aria-hidden="true" tabindex="-1"></a>    combined_dat<span class="sc">$</span>expr <span class="ot">=</span> expr_dat</span>
+<span id="cb184-18"><a href="#cb184-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb184-19"><a href="#cb184-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot pairs and calculate correlation coefficients between methylation and expression</span></span>
+<span id="cb184-20"><a href="#cb184-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggpairs</span>(combined_dat) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
+<span id="cb184-21"><a href="#cb184-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span>mpick, <span class="cf">function</span>(i){</span>
+<span id="cb184-22"><a href="#cb184-22" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb184-23"><a href="#cb184-23" aria-hidden="true" tabindex="-1"></a>        cor_to <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(combined_dat[,mpick<span class="sc">+</span><span class="dv">1</span>])</span>
+<span id="cb184-24"><a href="#cb184-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb184-25"><a href="#cb184-25" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">v1=</span> <span class="fu">as.numeric</span>(combined_dat[,i]),</span>
+<span id="cb184-26"><a href="#cb184-26" aria-hidden="true" tabindex="-1"></a>                         <span class="at">v2 =</span> cor_to)</span>
+<span id="cb184-27"><a href="#cb184-27" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb184-28"><a href="#cb184-28" aria-hidden="true" tabindex="-1"></a>        df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> <span class="fu">na.omit</span>()</span>
+<span id="cb184-29"><a href="#cb184-29" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb184-30"><a href="#cb184-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cor</span>(df[,<span class="dv">1</span>], df[,<span class="dv">2</span>])</span>
+<span id="cb184-31"><a href="#cb184-31" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb184-32"><a href="#cb184-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb184-33"><a href="#cb184-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb184-34"><a href="#cb184-34" aria-hidden="true" tabindex="-1"></a><span class="fu">me_rna_cor</span>(<span class="st">"TAC1"</span>, <span class="at">mpick=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: GGally</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'GGally' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'GGally':
+  method from   
+  +.gg   ggplot2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+Removed 5 rows containing missing values</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+Removed 5 rows containing missing values
+Warning in ggally_statistic(data = data, mapping = mapping, na.rm = na.rm, :
+Removed 5 rows containing missing values</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).
+Removed 5 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 5 rows containing non-finite outside the scale range
+(`stat_density()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div class="">
+<figure class="figure">
+<p class=""><a href="TCGA_files/figure-html/unnamed-chunk-30-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="TCGA_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="1260"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.0410095 0.1457715 0.0856926</code></pre>
+</div>
+</div></div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+</section>
      </main>
 <!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -1720,7 +1967,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"openEffect":"zoom","selector":".lightbox","loop":false,"descPosition":"bottom","closeEffect":"zoom"});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":false,"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
