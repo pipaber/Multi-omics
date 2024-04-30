@@ -1,0 +1,60 @@
+---
+title: "Integrative Analysis with TCGA Data"
+subtitle: "Analysis of Mutation Data from The Cancer Genome Atlas (TCGA)"
+format: html
+editor: visual
+---
+
+```{r}
+#| include: false
+library(knitr)
+
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  dpi = 180,
+  fig.width = 15,
+  fig.height = 8,
+  echo = TRUE
+)
+
+library(tidyverse)
+
+theme_set(theme_minimal())
+```
+
+## Introduction
+
+The Cancer Genome Atlas (TCGA) is a massive cancer genomics project compiling high-throughput multi-omic data on dozens of cancer types for [public access](https://www.cancer.gov/ccg/research/genome-sequencing/tcga).
+
+We are gonna use the `curatedTCGAData` package to manipulate locally to multiple high-throughput datasets from the project. The package provides access to TCGA data that has been curated and stored as a *MultiAssayExperiment* object on the Bioconductor [ExperimentHub](https://bioconductor.org/packages/release/bioc/html/ExperimentHub.html).
+
+First, let's load the packages needed.
+
+```{r}
+library(curatedTCGAData)
+library(TCGAutils)
+library(MultiAssayExperiment)
+
+```
+
+
+## Download the Data
+
+To download the data we need to use `curatedTCGAData`function. The first argument is a four letter disease (cancer) code (A complete list of disease codes used by the TCGA project are available on the [NCI Genomic Data Commons website](https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations)), the second argument is a vector of data types we want to download. We need to specify `dry.run = FALSE` to download the data.
+
+In this specific case, we are gonna work with RNA-Seq data, mutation data and methylation data from Rectum Adenocarcinoma (READ). The clinical data is included by default.
+
+```{r}
+#| message: false
+#| warning: false
+#| label: read-data
+
+
+readData = curatedTCGAData("READ", 
+                           c("RNASeq2GeneNorm", "Mutation", "Methylation_methyl450"), 
+                           dry.run = FALSE, version = "2.1.1")
+
+readData # this is a MultiAssayExperiment object
+```
+
