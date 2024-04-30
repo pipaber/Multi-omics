@@ -1,0 +1,213 @@
+---
+title: Integrative Analysis of Multi-omic Data
+author:
+  - name: Piero Palacios Bernuy
+    orcid: 0000-0001-6729-4080
+    corresponding: true
+    email: p.palacios.bernuy@gmail.com
+    roles:
+      - Investigation
+      - Bioinformatics
+      - Deep learning
+      - Visualization
+keywords:
+  - Genomic Ranges
+  - Omics
+  - Bioconductor
+abstract: |
+  This document is part of a series of the analysis of Omics data. Especifically, here is showed how to analyze bulk RNA-Seq data with Bioconductor packages. Also, it's showcased how to make plots of the RNA data in the context of differentially gene expression and gene-sets. 
+plain-language-summary: |
+  This document have a example of the analysis of bulk RNA-Seq data.
+key-points:
+  - A guide to analyze GWAS public data.
+  - A guide to analyze TCGA database.
+date: last-modified
+bibliography: references.bib
+citation:
+  container-title: An open source portfolio
+number-sections: true
+---
+
+## Introduction
+
+
+
+## GWAS Catalog with a ChIP-Seq Experiment
+
+Here,  we are gonna analyze the relation between transcription factor binding (ESRRA binding data) from a ChIP-Seq experiment and the genome-wide associations between DNA variants and phenotypes like diseases. For this task, we are gonna use a the `gwascat` package distributed by the **EMBL** (European Molecular Biology Laboratories).
+
+
+```{r}
+library(tidyverse)
+library(gwascat)
+library(GenomeInfoDb)
+library(ERBS)
+library(liftOver)
+```
+
+First, we need to download the data, keep the 24 chromosomes (from 1 to Y) and, specify the sequence information from the GRCh38 human genome annotation.
+
+```{r}
+
+gwcat = get_cached_gwascat()
+
+gg = gwcat |> as_GRanges()
+
+gg = keepStandardChromosomes(gg, pruning.mode = "coarse")
+
+# seqlevelsStyle(gg) <- "UCSC"
+
+seqlevels(gg) <- seqlevels(gg) |> 
+  sortSeqlevels()
+
+data("si.hs.38")
+
+seqinfo(gg) <- si.hs.38
+
+```
+
+Now, let's plot a karyogram that will show the SNP's identified with significant associations with a phenotype. The SNP's in the GWAS catalog have a stringent criterion of significance and there has been a replication of the finding from a independent population.
+
+```{r}
+ggbio::autoplot(gg, layout="karyogram")
+```
+
+We can see the peak data as a `GRanges` object: 
+
+```{r}
+data("GM12878")
+
+GM12878
+
+```
+
+If we see the bottom of the `GRanges` table, this experiment have the hg19 annotation from the human genome. To work on the GRCh38 annotation we need to lift-over with a `.chain` file. For this we can use the `AnnotationHub` package.
+
+```{r}
+library(AnnotationHub)
+ah <- AnnotationHub::AnnotationHub()
+
+query(ah, c("hg19ToHg38.over.chain"))
+
+chain <- ah[["AH14150"]]
+
+```
+
+```{r}
+GM12878 <- liftOver(GM12878, chain) |> 
+  unlist()
+
+seqlevelsStyle(GM12878) <- "NCBI"
+
+seqinfo(GM12878) <- si.hs.38
+
+
+seqlevelsStyle(GM12878) <- "UCSC"
+seqlevelsStyle(gg) <- "UCSC"
+```
+
+We can find overlaps between the GWAS catalog and the ESRRA ChIP-Seq experiment but, there is a problem; the GWAS catalog is a collection of intervals that reports all significant SNPs and there can be duplications of SNPs associated to multiple phenotypes or the same SNP might be found for the same phenotype in different studies.
+
+We can see the duplications with the `reduce` function from `IRanges` package:
+
+
+```{r}
+# duplicated loci
+length(gg) - length(reduce(gg))
+
+```
+We can see that there are `261160` duplicated loci. Let's find the overlap between the *reduced* catalog and the ChIP-Seq experiment:
+
+```{r}
+#
+fo = findOverlaps(GM12878, reduce(gg))
+fo
+
+```
+We can see `r length(fo)` hits. Then, we are gonna eobtain the ranges from those hits, retrieve the phenotypes (DISEASE/TRAIT) and show the top 20 most common phenotypes with association to SNPs that lies on the ESRRA binding peaks.
+
+```{r}
+over_ranges <- reduce(gg)[subjectHits(fo)]
+
+
+ii <- over_ranges |> 
+  as.data.frame() |> 
+  GenomicRanges::makeGRangesListFromDataFrame()
+
+
+phset = lapply(ii, function(x){
+  
+  # print(glue::glue("On range: {x}"))
+  unique(gg[which(gg %over% x)]$"DISEASE/TRAIT")
+  
+})
+
+gwas_on_peaks <- phset |> 
+    enframe() |> 
+    unnest(value) |> 
+    dplyr::count(value) |> 
+    slice_max(n, n=20)
+
+
+p <- gwas_on_peaks |> 
+  mutate(value = fct_reorder(value,n)) |> 
+  ggplot(aes(n,value, fill=value))+
+  geom_col() +
+  theme(legend.position = "none") +
+  paletteer::scale_fill_paletteer_d("khroma::smoothrainbow") +
+  theme_minimal()
+
+bslib::card(plotly::ggplotly(p), full_screen = T)
+```
+
+Distinct phenotypes identified on the peaks:
+
+```{r}
+length(phset)
+```
+Now, how to do the inference of these phenotype on peaks of these b cells? We can use permutation on the genomic positions to test if the number of phenotypes found is due to chance or not.
+
+```{r}
+library(ph525x)
+library(progress)
+
+set.seed(123)
+
+n_iter = 100
+
+pb <- progress_bar$new(format = "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated time remaining: :eta]",
+                       total = n_iter,
+                       complete = "=",   # Completion bar character
+                       incomplete = " ", # Incomplete bar character
+                       current = ">",    # Current bar character
+                       clear = FALSE,    # If TRUE, clears the bar when finish
+                       width = 100)   
+
+
+rsc = sapply(1:n_iter, function(x) {
+    pb$tick()
+    length(findOverlaps(reposition(GM12878), reduce(gg))) |> 
+    suppressWarnings()
+    
+})
+
+# compute prop with more overlaps than in observed data
+mean(rsc > length(fo))
+
+```
+
+
+
+## Explore the TCGA
+
+Please check the script below the image to see how to explore and get insights from the TCGA (The Cancer Genome Atlas) database.
+
+
+
+## Conclusion
+
+## References {.unnumbered}
+
+:::{#refs}
+
+:::
