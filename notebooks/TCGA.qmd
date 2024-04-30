@@ -319,12 +319,15 @@ ggsave(paste0(path,"number_mut_tp53_per_tumor_stage.jpeg"), device = "jpeg")
 
 # Linking expression and tumor stage
 
+We also can link the expression data (RNA-Seq) with the tumor stage data from the clinical metadata. [Check the TCGA RNA-Seq protocol online]{.aside}
+
 ```{r}
 rnaseq = readData[[2]]
 
 rnaseq
 
 ```
+As before, we need to shorten the sample IDs so they can match to the clinical data.
 
 ```{r}
 
@@ -345,6 +348,8 @@ rnaseq <- rnaseq[,!idx]
 
 ```
 
+Then, we can use the `limma` package to proceed with the differential expression analysis. In this case, we'll ise the tumor stage as a variable to explain the expression of the genes. 
+
 ```{r}
 
 library(limma)
@@ -356,6 +361,8 @@ topTable(ef1) |>
 
 ```
 
+Let's visualize two of the most expressed genes.
+
 ```{r}
 par(mfrow=c(1,2))
 boxplot(split(assay(rnaseq)["PAM",], rnaseq$t_stage), main="PAM")    # higher expression in lower t_stage
@@ -363,6 +370,10 @@ boxplot(split(assay(rnaseq)["PAIP2",], rnaseq$t_stage), main="PAIP2")
 ```
 
 # Linking methylation and expression
+
+Finally, we can use the methylation data with the expression data. This is important because methylated cytosines of the DNA change the expression of the genes.
+
+Some patients have methylation data for multiples tissue types. This information is encoded in the fourth component of the sample names. The code `01A` correspond to primary tumor samples and the code `11A` correspond to normal tissue. We'll keep the primary tumor samples.
 
 ```{r}
 
@@ -381,10 +392,14 @@ methyl = methyl[,idx]
 methyl
 ```
 
+As before, let's truncate the names of the sample to match the clinical data.
+
 ```{r}
 colnames(methyl) <- colnames(methyl) |> 
   str_sub(start = 1,end = 12)
 ```
+
+We can add the clinical data to the methyl object and count the number of patients with methylation and transcription data.
 
 ```{r}
 colData(methyl) <- as(clin[colnames(methyl),],"DataFrame")
@@ -393,6 +408,8 @@ colData(methyl) <- as(clin[colnames(methyl),],"DataFrame")
 intersect(colnames(methyl), colnames(rnaseq)) |> length()
 
 ```
+
+Let's subset common sample names and check the methylation data as row ranges.
 
 ```{r}
 
@@ -403,6 +420,8 @@ methyl_genes = rowData(methyl_subset)
 methyl_genes
 
 ```
+
+This function takes a gene symbol and returns a scatter plot showing the relationship between 3 different sites near that gene and gene expression.
 
 ```{r}
 
@@ -444,4 +463,3 @@ me_rna_cor("TAC1", mpick=3)
 
 ```
 
-## Conclusion
