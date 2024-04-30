@@ -248,3 +248,39 @@ ggsave(paste0(path,"samples_with_mut.jpeg"), device = "jpeg")
 ```
 
 ![Samples with specific mutation per gene](images/samples_with_mut.jpeg)
+## Linking mutations and tumor stage
+
+Now that we are familiarized with the mutation data, we can link mutations to the tumor stage from the patients with rectum adenocarcinoma.
+
+We can filter the clinical data with the patients that have mutation data.
+
+```{r}
+index <- which( (var_class_df$patientID |> unique()) %in% clin$patientID)
+
+clin_and_mutation = clin[index,]
+
+head(clin_and_mutation) 
+
+```
+
+We can count the number of genes with mutations per patient and then make a `left_join` to the clinical data to plot the mutated genes per tumor stage.
+
+```{r}
+#| label: fig-plot1
+
+
+df = var_class_df |> 
+  group_by(patientID) |> 
+  summarise(n = n())
+
+p <- clin_and_mutation |> 
+  left_join(df, by = join_by(patientID)) |> 
+  ggplot(aes(t_stage,log(n), fill=t_stage))+
+  geom_boxplot() +
+  geom_jitter(width = 0.05, colour="red2") +
+  paletteer::scale_fill_paletteer_d("awtools::a_palette")+
+  labs(x = "Tumor stage", y="Number of mutated genes in log scale")
+
+
+p
+```
