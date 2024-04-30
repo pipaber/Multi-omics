@@ -653,6 +653,39 @@ Functionality:
  exportClass() - save data to flat files</code></pre>
 </div>
 </div></div>
+<p>We can see which patients have data for each assay. The assay column gives the experiment type, the primary column gives the unique patient ID and the colname gives the sample ID used as a identifier within a given experiment.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [4]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sampleMap</span>(readData)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DataFrame with 352 rows and 3 columns
+                                  assay      primary                colname
+                               &lt;factor&gt;  &lt;character&gt;            &lt;character&gt;
+1   READ_Methylation_methyl450-20160128 TCGA-AF-2687 TCGA-AF-2687-01A-02D..
+2   READ_Methylation_methyl450-20160128 TCGA-AF-2690 TCGA-AF-2690-01A-02D..
+3   READ_Methylation_methyl450-20160128 TCGA-AF-2693 TCGA-AF-2693-01A-02D..
+4   READ_Methylation_methyl450-20160128 TCGA-AF-3911 TCGA-AF-3911-01A-01D..
+5   READ_Methylation_methyl450-20160128 TCGA-AF-4110 TCGA-AF-4110-01A-02D..
+...                                 ...          ...                    ...
+348       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A02G        TCGA-AG-A02G-01
+349       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A02N        TCGA-AG-A02N-01
+350       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A02X        TCGA-AG-A02X-01
+351       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A032        TCGA-AG-A032-01
+352       READ_RNASeq2GeneNorm-20160128 TCGA-AG-A036        TCGA-AG-A036-01</code></pre>
+</div>
+</div></div>
+<p>Not all patients have data for all assays, and some of them can have multiple data entries for one or more experiment type. This may correspond to multiple biopsies or matched tumor and normal samples from an individual patient.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [5]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sampleMap</span>(readData) <span class="sc">|&gt;</span> </span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(primary) <span class="sc">|&gt;</span> </span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  1   2   3   4 
+  5 147   7   8 </code></pre>
+</div>
+</div></div>
 </section>
      </main>
 <!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">

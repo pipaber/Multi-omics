@@ -58,3 +58,19 @@ readData = curatedTCGAData("READ",
 readData # this is a MultiAssayExperiment object
 ```
 
+We can see which patients have data for each assay. The assay column gives the experiment type, the primary column gives the unique patient ID and the colname gives the sample ID used as a identifier within a given experiment.
+
+```{r}
+sampleMap(readData)
+```
+
+Not all patients have data for all assays, and some of them can have multiple data entries for one or more experiment type. This may correspond to multiple biopsies or matched tumor and normal samples from an individual patient.
+
+```{r}
+sampleMap(readData) |> 
+  as_tibble() |> 
+  pull(primary) |> 
+  table() |> 
+  table()
+```
+
