@@ -74,3 +74,53 @@ sampleMap(readData) |>
   table()
 ```
 
+We can see the metadata of the patients with `colData`. Note that there are more than 2000 columns of data per patient (not necessarily complete).
+
+```{r}
+clin = colData(readData) |> 
+  as_tibble()
+dim(clin)
+
+head(colnames(clin), 10) 
+
+```
+
+As an example, for rectum adenocarcinoma, we can see the tumor stage.
+
+```{r}
+
+clin |> 
+  pull(pathology_T_stage) |> 
+  table()
+  
+```
+
+Stage T4 have subgroups. To simplify the analysis, let's combine all T4 tumors.
+
+```{r}
+
+clin <- clin |> 
+  mutate(t_stage = case_when(
+    pathology_T_stage %in% c("t4","t4a","t4b") ~ "t4",
+    .default = pathology_T_stage
+  ))
+
+clin$t_stage |> 
+  table()
+
+```
+
+Also, we can see the vital status (alive=0, deceased=1)
+
+```{r}
+clin$vital_status |> 
+  table()
+```
+
+Or combine tumor status and vital status.
+
+```{r}
+table(clin$t_stage, clin$vital_status)
+```
+
+
