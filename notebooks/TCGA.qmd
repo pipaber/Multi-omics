@@ -317,7 +317,7 @@ ggsave(paste0(path,"number_mut_tp53_per_tumor_stage.jpeg"), device = "jpeg")
 
 ![Number of mutations on gene TP53 per tumor stage](images/number_mut_tp53_per_tumor_stage.jpeg)
 
-## Linking expression and tumor stage
+# Linking expression and tumor stage
 
 ```{r}
 rnaseq = readData[[2]]
@@ -362,7 +362,7 @@ boxplot(split(assay(rnaseq)["PAM",], rnaseq$t_stage), main="PAM")    # higher ex
 boxplot(split(assay(rnaseq)["PAIP2",], rnaseq$t_stage), main="PAIP2")
 ```
 
-## Linking methylation and expression
+# Linking methylation and expression
 
 ```{r}
 
