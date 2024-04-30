@@ -1200,16 +1200,103 @@ Somatic
 </div>
 <div class="sourceCode cell-code" id="cb154"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb154-1"><a href="#cb154-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb154-2"><a href="#cb154-2" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="st">"images/"</span></span>
-<span id="cb154-3"><a href="#cb154-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb154-4"><a href="#cb154-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="fu">paste0</span>(path,<span class="st">"samples_with_mut.jpeg"</span>), <span class="at">device =</span> <span class="st">"jpeg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb154-3"><a href="#cb154-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="fu">paste0</span>(path,<span class="st">"samples_with_mut.jpeg"</span>), <span class="at">device =</span> <span class="st">"jpeg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+</div></div>
+<p><img src="images/samples_with_mut.jpeg" class="img-fluid" alt="Samples with specific mutation per gene"> ## Linking mutations and tumor stage</p>
+<p>Now that we are familiarized with the mutation data, we can link mutations to the tumor stage from the patients with rectum adenocarcinoma.</p>
+<p>We can filter the clinical data with the patients that have mutation data.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [19]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb156"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb156-1"><a href="#cb156-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="fu">which</span>( (var_class_df<span class="sc">$</span>patientID <span class="sc">|&gt;</span> <span class="fu">unique</span>()) <span class="sc">%in%</span> clin<span class="sc">$</span>patientID)</span>
+<span id="cb156-2"><a href="#cb156-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb156-3"><a href="#cb156-3" aria-hidden="true" tabindex="-1"></a>clin_and_mutation <span class="ot">=</span> clin[index,]</span>
+<span id="cb156-4"><a href="#cb156-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb156-5"><a href="#cb156-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(clin_and_mutation) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 2,261
+  patientID    years_to_birth vital_status days_to_death days_to_last_followup
+  &lt;chr&gt;                 &lt;int&gt;        &lt;int&gt;         &lt;int&gt;                 &lt;int&gt;
+1 TCGA-AF-2687             57            0            NA                  1427
+2 TCGA-AF-2689             41            1          1201                    NA
+3 TCGA-AF-2690             76            1           524                    NA
+4 TCGA-AF-2691             48            0            NA                  1309
+5 TCGA-AF-2692             54            0            NA                   412
+6 TCGA-AF-2693             75            0            NA                  1155
+# ℹ 2,256 more variables: tumor_tissue_site &lt;chr&gt;, pathologic_stage &lt;chr&gt;,
+#   pathology_T_stage &lt;chr&gt;, pathology_N_stage &lt;chr&gt;, pathology_M_stage &lt;chr&gt;,
+#   gender &lt;chr&gt;, date_of_initial_pathologic_diagnosis &lt;int&gt;,
+#   days_to_last_known_alive &lt;int&gt;, radiation_therapy &lt;chr&gt;,
+#   histological_type &lt;chr&gt;, tumor_stage &lt;chr&gt;, residual_tumor &lt;chr&gt;,
+#   number_of_lymph_nodes &lt;int&gt;, ethnicity &lt;chr&gt;, admin.bcr &lt;chr&gt;,
+#   admin.day_of_dcc_upload &lt;int&gt;, admin.disease_code &lt;chr&gt;, …</code></pre>
+</div>
+</div></div>
+<p>We can count the number of genes with mutations per patient and then make a <code>left_join</code> to the clinical data to plot the mutated genes per tumor stage.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [20]:</pre></div><div id="cell-fig-plot1" class="cell">
+<div class="sourceCode cell-code" id="cb158"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb158-1"><a href="#cb158-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb158-2"><a href="#cb158-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> var_class_df <span class="sc">|&gt;</span> </span>
+<span id="cb158-3"><a href="#cb158-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(patientID) <span class="sc">|&gt;</span> </span>
+<span id="cb158-4"><a href="#cb158-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>())</span>
+<span id="cb158-5"><a href="#cb158-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb158-6"><a href="#cb158-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> clin_and_mutation <span class="sc">|&gt;</span> </span>
+<span id="cb158-7"><a href="#cb158-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(df, <span class="at">by =</span> <span class="fu">join_by</span>(patientID)) <span class="sc">|&gt;</span> </span>
+<span id="cb158-8"><a href="#cb158-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(t_stage,<span class="fu">log</span>(n), <span class="at">fill=</span>t_stage))<span class="sc">+</span></span>
+<span id="cb158-9"><a href="#cb158-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb158-10"><a href="#cb158-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.05</span>, <span class="at">colour=</span><span class="st">"red2"</span>) <span class="sc">+</span></span>
+<span id="cb158-11"><a href="#cb158-11" aria-hidden="true" tabindex="-1"></a>  paletteer<span class="sc">::</span><span class="fu">scale_fill_paletteer_d</span>(<span class="st">"awtools::a_palette"</span>)<span class="sc">+</span></span>
+<span id="cb158-12"><a href="#cb158-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Tumor stage"</span>, <span class="at">y=</span><span class="st">"Number of mutated genes in log scale"</span>)</span>
+<span id="cb158-13"><a href="#cb158-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb158-14"><a href="#cb158-14" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="st">"images/"</span></span>
+<span id="cb158-15"><a href="#cb158-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="fu">paste0</span>(path,<span class="st">"number_mut_genes_per_tumor_stage.jpeg"</span>), <span class="at">device =</span> <span class="st">"jpeg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 20 rows containing non-finite outside the scale range
+(`stat_boxplot()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 20 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+</div></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/number_mut_genes_per_tumor_stage.jpeg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Number of mutated genes per tumor stage"><img src="images/number_mut_genes_per_tumor_stage.jpeg" class="img-fluid figure-img" alt="Number of mutated genes per tumor stage"></a></p>
+<figcaption>Number of mutated genes per tumor stage</figcaption>
+</figure>
+</div>
+<p>Also, we can focus on a specific gene, e.g.&nbsp;<a href="https://www.ncbi.nlm.nih.gov/gene/7157">TP53</a>.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [21]:</pre></div><div id="cell-fig-plot_tp53" class="cell">
+<div class="sourceCode cell-code" id="cb162"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb162-1"><a href="#cb162-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb162-2"><a href="#cb162-2" aria-hidden="true" tabindex="-1"></a>mut_on_tp53 <span class="ot">&lt;-</span> var_class_df <span class="sc">|&gt;</span> </span>
+<span id="cb162-3"><a href="#cb162-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(symbol <span class="sc">==</span> <span class="st">"TP53"</span>) </span>
+<span id="cb162-4"><a href="#cb162-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb162-5"><a href="#cb162-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb162-6"><a href="#cb162-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span>clin_and_mutation <span class="sc">|&gt;</span> </span>
+<span id="cb162-7"><a href="#cb162-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(patientID <span class="sc">%in%</span>  mut_on_tp53<span class="sc">$</span>patientID) <span class="sc">|&gt;</span> </span>
+<span id="cb162-8"><a href="#cb162-8" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(t_stage, patientID) <span class="sc">|&gt;</span> </span>
+<span id="cb162-9"><a href="#cb162-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(t_stage) <span class="sc">|&gt;</span> </span>
+<span id="cb162-10"><a href="#cb162-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb162-11"><a href="#cb162-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mutate(t_stage = fct_reorder(t_stage,n)) |&gt; </span></span>
+<span id="cb162-12"><a href="#cb162-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(n, t_stage, <span class="at">fill=</span>t_stage, <span class="at">label=</span>n)) <span class="sc">+</span></span>
+<span id="cb162-13"><a href="#cb162-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb162-14"><a href="#cb162-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">fill=</span><span class="st">"white"</span>)  <span class="sc">+</span></span>
+<span id="cb162-15"><a href="#cb162-15" aria-hidden="true" tabindex="-1"></a>  paletteer<span class="sc">::</span><span class="fu">scale_fill_paletteer_d</span>(<span class="st">"awtools::a_palette"</span>)<span class="sc">+</span></span>
+<span id="cb162-16"><a href="#cb162-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Tumor Stage"</span>, <span class="at">x=</span><span class="st">"N° of Mutations"</span>, <span class="at">fill=</span><span class="st">"Tumor Stage"</span>, <span class="at">title=</span><span class="st">"Number of Mutations on Gene TP53"</span>)</span>
+<span id="cb162-17"><a href="#cb162-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb162-18"><a href="#cb162-18" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="st">"images/"</span></span>
+<span id="cb162-19"><a href="#cb162-19" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="fu">paste0</span>(path,<span class="st">"number_mut_tp53_per_tumor_stage.jpeg"</span>), <span class="at">device =</span> <span class="st">"jpeg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Saving 7 x 5 in image</code></pre>
 </div>
 </div></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="images/samples_with_mut.jpeg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Samples with specific mutation per gene"><img src="images/samples_with_mut.jpeg" class="img-fluid figure-img" alt="Samples with specific mutation per gene"></a></p>
-<figcaption>Samples with specific mutation per gene</figcaption>
+<p><a href="images/number_mut_tp53_per_tumor_stage.jpeg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Number of mutations on gene TP53 per tumor stage"><img src="images/number_mut_tp53_per_tumor_stage.jpeg" class="img-fluid figure-img" alt="Number of mutations on gene TP53 per tumor stage"></a></p>
+<figcaption>Number of mutations on gene TP53 per tumor stage</figcaption>
 </figure>
 </div>
 </section>
@@ -1633,7 +1720,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"loop":false,"descPosition":"bottom","selector":".lightbox","closeEffect":"zoom","openEffect":"zoom"});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","loop":false,"selector":".lightbox","descPosition":"bottom","openEffect":"zoom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;

@@ -240,11 +240,208 @@ p <- var_class_df |>
   labs(x = "Samples with specific mutation", y="Gene Symbol", fill="Variant Class",
        title="Top 20 Samples with READ")
 
-path <- "images/"
 
+path <- "images/"
 ggsave(paste0(path,"samples_with_mut.jpeg"), device = "jpeg")
 
 
 ```
 
 ![Samples with specific mutation per gene](images/samples_with_mut.jpeg)
+## Linking mutations and tumor stage
+
+Now that we are familiarized with the mutation data, we can link mutations to the tumor stage from the patients with rectum adenocarcinoma.
+
+We can filter the clinical data with the patients that have mutation data.
+
+```{r}
+index <- which( (var_class_df$patientID |> unique()) %in% clin$patientID)
+
+clin_and_mutation = clin[index,]
+
+head(clin_and_mutation) 
+
+```
+
+We can count the number of genes with mutations per patient and then make a `left_join` to the clinical data to plot the mutated genes per tumor stage.
+
+```{r}
+#| label: fig-plot1
+
+
+df = var_class_df |> 
+  group_by(patientID) |> 
+  summarise(n = n())
+
+p <- clin_and_mutation |> 
+  left_join(df, by = join_by(patientID)) |> 
+  ggplot(aes(t_stage,log(n), fill=t_stage))+
+  geom_boxplot() +
+  geom_jitter(width = 0.05, colour="red2") +
+  paletteer::scale_fill_paletteer_d("awtools::a_palette")+
+  labs(x = "Tumor stage", y="Number of mutated genes in log scale")
+
+path <- "images/"
+ggsave(paste0(path,"number_mut_genes_per_tumor_stage.jpeg"), device = "jpeg")
+
+```
+
+![Number of mutated genes per tumor stage](images/number_mut_genes_per_tumor_stage.jpeg)
+
+Also, we can focus on a specific gene, e.g. [TP53](https://www.ncbi.nlm.nih.gov/gene/7157).
+
+```{r}
+#| label: fig-plot_tp53
+
+
+mut_on_tp53 <- var_class_df |> 
+  dplyr::filter(symbol == "TP53") 
+
+
+p <-clin_and_mutation |> 
+  dplyr::filter(patientID %in%  mut_on_tp53$patientID) |> 
+  dplyr::select(t_stage, patientID) |> 
+  group_by(t_stage) |> 
+  summarise(n = n()) |> 
+  # mutate(t_stage = fct_reorder(t_stage,n)) |> 
+  ggplot(aes(n, t_stage, fill=t_stage, label=n)) +
+  geom_col() +
+  geom_label(fill="white")  +
+  paletteer::scale_fill_paletteer_d("awtools::a_palette")+
+  labs(y = "Tumor Stage", x="N° of Mutations", fill="Tumor Stage", title="Number of Mutations on Gene TP53")
+
+path <- "images/"
+ggsave(paste0(path,"number_mut_tp53_per_tumor_stage.jpeg"), device = "jpeg")
+
+```
+
+![Number of mutations on gene TP53 per tumor stage](images/number_mut_tp53_per_tumor_stage.jpeg)
+
+## Linking expression and tumor stage
+
+```{r}
+rnaseq = readData[[2]]
+
+rnaseq
+
+```
+
+```{r}
+
+colnames(rnaseq) = colnames(rnaseq) |> 
+  stringr::str_sub(1,12)
+
+clin <- clin |> as.data.frame()
+rownames(clin) <- clin$patientID
+
+index <- which(colnames(rnaseq) %in% rownames(clin))
+
+colData(rnaseq) = as(clin[colnames(rnaseq),],"DataFrame")
+
+
+idx <- is.na(colData(rnaseq)$t_stage)
+
+rnaseq <- rnaseq[,!idx]
+
+```
+
+```{r}
+
+library(limma)
+mm = model.matrix(~t_stage, data=colData(rnaseq))
+f1 = lmFit(assay(rnaseq), mm)
+ef1 = eBayes(f1)
+topTable(ef1) |> 
+  arrange(desc(AveExpr))
+
+```
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(split(assay(rnaseq)["PAM",], rnaseq$t_stage), main="PAM")    # higher expression in lower t_stage
+boxplot(split(assay(rnaseq)["PAIP2",], rnaseq$t_stage), main="PAIP2")
+```
+
+## Linking methylation and expression
+
+```{r}
+
+methyl <- readData[[3]]
+
+idx <- colnames(methyl) |> 
+  str_split(pattern = "-") |> 
+  map(4) |> 
+  enframe() |> 
+  unnest(value)
+
+idx <- which(idx$value == "01A")
+
+methyl = methyl[,idx]
+
+methyl
+```
+
+```{r}
+colnames(methyl) <- colnames(methyl) |> 
+  str_sub(start = 1,end = 12)
+```
+
+```{r}
+colData(methyl) <- as(clin[colnames(methyl),],"DataFrame")
+
+
+intersect(colnames(methyl), colnames(rnaseq)) |> length()
+
+```
+
+```{r}
+
+methyl_subset = methyl[,which(colnames(methyl) %in% colnames(rnaseq))]
+rnaseq_subset = rnaseq[,which(colnames(rnaseq) %in% colnames(methyl))]
+
+methyl_genes = rowData(methyl_subset)
+methyl_genes
+
+```
+
+```{r}
+
+#| label: fig-plot
+
+me_rna_cor = function(sym, mpick = 3){
+    require(GGally)
+    # subset methylation data to first mpick methylation sites for given gene symbol
+    methyl_ind = which(methyl_genes$Gene_Symbol == sym)
+    if (length(methyl_ind) > mpick){    
+        methyl_ind = methyl_ind[1:mpick]
+    }
+    methyl_dat = assay(methyl_subset)[methyl_ind,]    # subset to selected methylation sites
+
+    # subset expression data to selected gene symbol
+    expr_ind = which(rownames(rnaseq_subset) == sym)    
+    expr_dat = assay(rnaseq_subset)[expr_ind,]
+
+    # combine methylation and expression data as data frame
+    combined_dat = as(t(methyl_dat), "DataFrame")
+    combined_dat$expr = expr_dat
+
+    # plot pairs and calculate correlation coefficients between methylation and expression
+    ggpairs(combined_dat) |> print()
+    sapply(1:mpick, function(i){
+      
+        cor_to <- as.numeric(combined_dat[,mpick+1])
+        
+        df <- data.frame(v1= as.numeric(combined_dat[,i]),
+                         v2 = cor_to)
+        
+        df <- df |> na.omit()
+      
+        cor(df[,1], df[,2])
+    })
+}
+
+me_rna_cor("TAC1", mpick=3)
+
+```
+
+## Conclusion
