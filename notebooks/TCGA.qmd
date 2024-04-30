@@ -1,0 +1,245 @@
+---
+title: "Integrative Analysis with TCGA Data"
+subtitle: "Analysis of Mutation Data from The Cancer Genome Atlas (TCGA)"
+format: html
+editor: visual
+---
+
+```{r}
+#| include: false
+library(knitr)
+
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  dpi = 180,
+  fig.width = 15,
+  fig.height = 8,
+  echo = TRUE
+)
+
+library(tidyverse)
+
+theme_set(theme_minimal())
+```
+
+## Introduction
+
+The Cancer Genome Atlas (TCGA) is a massive cancer genomics project compiling high-throughput multi-omics data on dozens of cancer types for [public access](https://www.cancer.gov/ccg/research/genome-sequencing/tcga).
+
+We are gonna use the `curatedTCGAData` package to manipulate locally to multiple high-throughput datasets from the project. The package provides access to TCGA data that has been curated and stored as a *MultiAssayExperiment* object on the Bioconductor [ExperimentHub](https://bioconductor.org/packages/release/bioc/html/ExperimentHub.html).
+
+First, let's load the packages needed.
+
+```{r}
+library(curatedTCGAData)
+library(TCGAutils)
+library(MultiAssayExperiment)
+
+```
+
+## Download the Data
+
+To download the data we need to use `curatedTCGAData`function. The first argument is a four letter disease (cancer) code (A complete list of disease codes used by the TCGA project are available on the [NCI Genomic Data Commons website](https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations)), the second argument is a vector of data types we want to download. We need to specify `dry.run = FALSE` to download the data.
+
+In this specific case, we are gonna work with RNA-Seq data, mutation data and methylation data from Rectum Adenocarcinoma (READ). The clinical data is included by default.
+
+```{r}
+#| message: false
+#| warning: false
+
+
+readData = curatedTCGAData("READ", 
+                           c("RNASeq2GeneNorm", "Mutation", "Methylation_methyl450"), 
+                           dry.run = FALSE, version = "2.1.1")
+
+readData # this is a MultiAssayExperiment object
+
+```
+
+We can see which patients have data for each assay. The assay column gives the experiment type, the primary column gives the unique patient ID and the colname gives the sample ID used as a identifier within a given experiment.
+
+```{r}
+sampleMap(readData)
+```
+
+Not all patients have data for all assays, and some of them can have multiple data entries for one or more experiment type. This may correspond to multiple biopsies or matched tumor and normal samples from an individual patient.
+
+```{r}
+sampleMap(readData) |> 
+  as_tibble() |> 
+  pull(primary) |> 
+  table() |> 
+  table()
+```
+
+We can see the metadata of the patients with `colData`. Note that there are more than 2000 columns of data per patient (not necessarily complete).
+
+```{r}
+clin = colData(readData) |> 
+  as_tibble()
+dim(clin)
+
+head(colnames(clin), 10) 
+
+```
+
+As an example, for rectum adenocarcinoma, we can see the tumor stage.
+
+```{r}
+
+clin |> 
+  pull(pathology_T_stage) |> 
+  table()
+  
+```
+
+Stage T4 have subgroups. To simplify the analysis, let's combine all T4 tumors.
+
+```{r}
+
+clin <- clin |> 
+  mutate(t_stage = case_when(
+    pathology_T_stage %in% c("t4","t4a","t4b") ~ "t4",
+    .default = pathology_T_stage
+  ))
+
+clin$t_stage |> 
+  table()
+
+```
+
+Also, we can see the vital status (alive=0, deceased=1)
+
+```{r}
+clin$vital_status |> 
+  table()
+```
+
+Or combine tumor status and vital status.
+
+```{r}
+table(clin$t_stage, clin$vital_status)
+```
+
+# Analyzing Mutation Data
+
+Let's begin analyzing the mutation data. Below is the code to retrieve the mutation data.
+
+```{r}
+mut_data = readData[[1]]
+
+mut_data
+```
+
+From the inspection of the sample IDs we can see that the mutation colnames match to the **primary** column from he clinical data.
+
+```{r}
+mut_sample_ids = colnames(mut_data)
+head(mut_sample_ids)
+
+head(clin$patientID)
+
+```
+
+We need to manipulate these by substracting 12 characters.
+
+```{r}
+
+mut_sample_ids <- mut_sample_ids |> 
+  stringr::str_sub(1,12)
+
+all(mut_sample_ids %in% clin$patientID)
+
+```
+
+Is important to note that the data stored in `assay(mut_data)` is difficult to work with because is a sparse matrix that has a row for each `GRanges` with a mutation in at least one sample.
+
+```{r}
+assay(mut_data)[1:3,1:3]
+
+# Is a sparse matrix
+
+assay(mut_data)[1,] |> 
+  table(useNA="ifany")
+
+```
+
+We can get more information if we look at the mutation information for each patient.
+
+```{r}
+mut_assay = mut_data@assays
+
+mut_assay # GRangesList
+
+mut_assay |> class()
+
+length(mut_assay)
+```
+
+Let's inspect the data from the first patient. We can see from the metadata information the Hugo Symbol, mutation status and predicted effect of each mutation at variant classification.
+
+```{r}
+mut_assay[[1]]
+
+mut_assay[[1]]$Hugo_Symbol
+
+mut_assay[[1]]$Mutation_Status |> 
+  table()
+
+mut_assay[[1]]$Variant_Classification |> 
+  table()
+
+```
+
+Now, is kind of a trouble to inspect manually each patient. So, lets get all mutation information from Hugo symbol and Variant classification for all the patients.
+
+```{r}
+
+var_class_df = mapply(function(sample_id, mutation_assay){
+  
+  d = mcols(mutation_assay)[,c("Hugo_Symbol","Variant_Classification")] |> 
+    as.data.frame()
+  
+  colnames(d) = c("symbol","variant_class")
+  
+  d$patientID = sample_id
+  
+  return(d)
+  
+}, sample_id=mut_sample_ids, mutation_assay = mut_assay,SIMPLIFY = F, USE.NAMES = F)
+
+
+var_class_df = do.call(rbind, var_class_df)
+
+
+head(var_class_df)
+
+```
+
+We can visualize the most common mutated genes genes in rectum adenocarcinoma
+
+```{r}
+#| label: fig-genesmut
+
+p <- var_class_df |> 
+  as_tibble() |> 
+  group_by(symbol,variant_class) |> 
+  summarise(n = n()) |> 
+  arrange(desc(n)) |> 
+  ungroup() |> 
+  slice_max(order_by = n, n = 20) |> 
+  ungroup() |> 
+  mutate(symbol = fct_reorder(symbol,n)) |> 
+  ggplot(aes(n, symbol,fill=variant_class)) +
+  geom_col() +
+  facet_wrap(~variant_class) +
+  paletteer::scale_fill_paletteer_d("awtools::a_palette") +
+  labs(x = "Number of samples with specific mutation", y="Gene Symbol", fill="Variant Class",
+       title="Top 20 Samples with Rectum Adenocarcinoma Mutation")
+
+
+p
+
+```
+
