@@ -157,7 +157,7 @@ p <- gwas_on_peaks |>
   paletteer::scale_fill_paletteer_d("khroma::smoothrainbow") +
   theme_minimal()
 
-bslib::card(plotly::ggplotly(p), full_screen = T)
+htmltools::tagList(list(plotly::ggplotly(p)))
 ```
 
 Distinct phenotypes identified on the peaks:
@@ -165,6 +165,7 @@ Distinct phenotypes identified on the peaks:
 ```{r}
 length(phset)
 ```
+
 Now, how to do the inference of these phenotype on peaks of these b cells? We can use permutation on the genomic positions to test if the number of phenotypes found is due to chance or not.
 
 ```{r}
@@ -200,9 +201,8 @@ mean(rsc > length(fo))
 
 ## Explore the TCGA
 
-Please check the script below the image to see how to explore and get insights from the TCGA (The Cancer Genome Atlas) database.
+Please check the dedicated script (top left) to see how to explore and get insights from the TCGA (The Cancer Genome Atlas) database.
 
-{{< embed notebooks/TCGA.qmd#read-data echo=true >}}
 
 ## Conclusion
 
