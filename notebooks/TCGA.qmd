@@ -220,5 +220,27 @@ head(var_class_df)
 
 We can visualize the most common mutated genes genes in rectum adenocarcinoma
 
+```{r}
+#| label: fig-genesmut
 
+p <- var_class_df |> 
+  as_tibble() |> 
+  group_by(symbol,variant_class) |> 
+  summarise(n = n()) |> 
+  arrange(desc(n)) |> 
+  ungroup() |> 
+  slice_max(order_by = n, n = 20) |> 
+  ungroup() |> 
+  mutate(symbol = fct_reorder(symbol,n)) |> 
+  ggplot(aes(n, symbol,fill=variant_class)) +
+  geom_col() +
+  facet_wrap(~variant_class) +
+  paletteer::scale_fill_paletteer_d("awtools::a_palette") +
+  labs(x = "samples with specific mutation", y="Gene Symbol", fill="Variant Class",
+       title="Top 20 Samples with READ")
+
+
+print(p)
+
+```
 
