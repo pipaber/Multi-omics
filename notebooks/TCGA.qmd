@@ -36,7 +36,6 @@ library(MultiAssayExperiment)
 
 ```
 
-
 ## Download the Data
 
 To download the data we need to use `curatedTCGAData`function. The first argument is a four letter disease (cancer) code (A complete list of disease codes used by the TCGA project are available on the [NCI Genomic Data Commons website](https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations)), the second argument is a vector of data types we want to download. We need to specify `dry.run = FALSE` to download the data.
@@ -222,6 +221,8 @@ We can visualize the most common mutated genes genes in rectum adenocarcinoma
 
 ```{r}
 #| label: fig-genesmut
+#| message: false
+#| warning: false
 
 p <- var_class_df |> 
   as_tibble() |> 
@@ -239,8 +240,11 @@ p <- var_class_df |>
   labs(x = "Samples with specific mutation", y="Gene Symbol", fill="Variant Class",
        title="Top 20 Samples with READ")
 
-ggsave("")
+path <- "images/"
+
+ggsave(paste0(path,"samples_with_mut.jpeg"), device = "jpeg")
 
 
 ```
 
+![Samples with specific mutation per gene](images/samples_with_mut.jpeg)
