@@ -236,11 +236,11 @@ p <- var_class_df |>
   geom_col() +
   facet_wrap(~variant_class) +
   paletteer::scale_fill_paletteer_d("awtools::a_palette") +
-  labs(x = "samples with specific mutation", y="Gene Symbol", fill="Variant Class",
+  labs(x = "Samples with specific mutation", y="Gene Symbol", fill="Variant Class",
        title="Top 20 Samples with READ")
 
+ggsave("")
 
-print(p)
 
 ```
 
