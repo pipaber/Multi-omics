@@ -213,10 +213,7 @@
   <li><a href="#review-the-clinical-metadata" id="toc-review-the-clinical-metadata" class="nav-link" data-scroll-target="#review-the-clinical-metadata">Review the Clinical Metadata</a></li>
   <li><a href="#analyzing-mutation-data" id="toc-analyzing-mutation-data" class="nav-link" data-scroll-target="#analyzing-mutation-data">Analyzing Mutation Data</a></li>
   <li><a href="#linking-expression-and-tumor-stage" id="toc-linking-expression-and-tumor-stage" class="nav-link" data-scroll-target="#linking-expression-and-tumor-stage">Linking expression and tumor stage</a></li>
-  <li><a href="#linking-methylation-and-expression" id="toc-linking-methylation-and-expression" class="nav-link" data-scroll-target="#linking-methylation-and-expression">Linking methylation and expression</a>
-  <ul class="collapse">
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
-  </ul></li>
+  <li><a href="#linking-methylation-and-expression" id="toc-linking-methylation-and-expression" class="nav-link" data-scroll-target="#linking-methylation-and-expression">Linking methylation and expression</a></li>
   </ul>
 </nav>
 </div>
@@ -1307,6 +1304,7 @@ Somatic
 </section>
 <section id="linking-expression-and-tumor-stage" class="level1">
 <h1>Linking expression and tumor stage</h1>
+<div class=""><p>We also can link the expression data (RNA-Seq) with the tumor stage data from the clinical metadata. </p><div class="no-row-height"><span class="margin-aside">Check the TCGA RNA-Seq protocol online</span></div></div>
 <div class="cell-container"><div class="cell-decorator"><pre>In [22]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb164"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb164-1"><a href="#cb164-1" aria-hidden="true" tabindex="-1"></a>rnaseq <span class="ot">=</span> readData[[<span class="dv">2</span>]]</span>
 <span id="cb164-2"><a href="#cb164-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1323,6 +1321,7 @@ colnames(177): TCGA-AF-2687-01 TCGA-AF-2689-11 ... TCGA-AG-A032-01
 colData names(0):</code></pre>
 </div>
 </div></div>
+<p>As before, we need to shorten the sample IDs so they can match to the clinical data.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [23]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb166"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb166-1"><a href="#cb166-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rnaseq) <span class="ot">=</span> <span class="fu">colnames</span>(rnaseq) <span class="sc">|&gt;</span> </span>
 <span id="cb166-2"><a href="#cb166-2" aria-hidden="true" tabindex="-1"></a>  stringr<span class="sc">::</span><span class="fu">str_sub</span>(<span class="dv">1</span>,<span class="dv">12</span>)</span>
@@ -1339,6 +1338,7 @@ colData names(0):</code></pre>
 <span id="cb166-13"><a href="#cb166-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb166-14"><a href="#cb166-14" aria-hidden="true" tabindex="-1"></a>rnaseq <span class="ot">&lt;-</span> rnaseq[,<span class="sc">!</span>idx]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
+<p>Then, we can use the <code>limma</code> package to proceed with the differential expression analysis. In this case, we’ll ise the tumor stage as a variable to explain the expression of the genes.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [24]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb167"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(limma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -1389,6 +1389,7 @@ GRM5      0.06719153
 C1orf223  0.06719153</code></pre>
 </div>
 </div></div>
+<p>Let’s visualize two of the most expressed genes.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [25]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb176"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb176-1"><a href="#cb176-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
 <span id="cb176-2"><a href="#cb176-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(<span class="fu">split</span>(<span class="fu">assay</span>(rnaseq)[<span class="st">"PAM"</span>,], rnaseq<span class="sc">$</span>t_stage), <span class="at">main=</span><span class="st">"PAM"</span>)    <span class="co"># higher expression in lower t_stage</span></span>
@@ -1404,6 +1405,8 @@ C1orf223  0.06719153</code></pre>
 </section>
 <section id="linking-methylation-and-expression" class="level1">
 <h1>Linking methylation and expression</h1>
+<p>Finally, we can use the methylation data with the expression data. This is important because methylated cytosines of the DNA change the expression of the genes.</p>
+<p>Some patients have methylation data for multiples tissue types. This information is encoded in the fourth component of the sample names. The code <code>01A</code> correspond to primary tumor samples and the code <code>11A</code> correspond to normal tissue. We’ll keep the primary tumor samples.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [26]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a>methyl <span class="ot">&lt;-</span> readData[[<span class="dv">3</span>]]</span>
 <span id="cb177-2"><a href="#cb177-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1430,10 +1433,12 @@ colnames(95): TCGA-AF-2687-01A-02D-1734-05 TCGA-AF-2690-01A-02D-1734-05
 colData names(0):</code></pre>
 </div>
 </div></div>
+<p>As before, let’s truncate the names of the sample to match the clinical data.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [27]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(methyl) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(methyl) <span class="sc">|&gt;</span> </span>
 <span id="cb179-2"><a href="#cb179-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_sub</span>(<span class="at">start =</span> <span class="dv">1</span>,<span class="at">end =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
+<p>We can add the clinical data to the methyl object and count the number of patients with methylation and transcription data.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [28]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb180"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb180-1"><a href="#cb180-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(methyl) <span class="ot">&lt;-</span> <span class="fu">as</span>(clin[<span class="fu">colnames</span>(methyl),],<span class="st">"DataFrame"</span>)</span>
 <span id="cb180-2"><a href="#cb180-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1443,6 +1448,7 @@ colData names(0):</code></pre>
 <pre><code>[1] 93</code></pre>
 </div>
 </div></div>
+<p>Let’s subset common sample names and check the methylation data as row ranges.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [29]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb182"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb182-1"><a href="#cb182-1" aria-hidden="true" tabindex="-1"></a>methyl_subset <span class="ot">=</span> methyl[,<span class="fu">which</span>(<span class="fu">colnames</span>(methyl) <span class="sc">%in%</span> <span class="fu">colnames</span>(rnaseq))]</span>
 <span id="cb182-2"><a href="#cb182-2" aria-hidden="true" tabindex="-1"></a>rnaseq_subset <span class="ot">=</span> rnaseq[,<span class="fu">which</span>(<span class="fu">colnames</span>(rnaseq) <span class="sc">%in%</span> <span class="fu">colnames</span>(methyl))]</span>
@@ -1466,6 +1472,7 @@ rs966367            NA          NA                  0
 rs9839873           NA          NA                  0</code></pre>
 </div>
 </div></div>
+<p>This function takes a gene symbol and returns a scatter plot showing the relationship between 3 different sites near that gene and gene expression.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [30]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb184"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb184-1"><a href="#cb184-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb184-2"><a href="#cb184-2" aria-hidden="true" tabindex="-1"></a>me_rna_cor <span class="ot">=</span> <span class="cf">function</span>(sym, <span class="at">mpick =</span> <span class="dv">3</span>){</span>
@@ -1545,9 +1552,6 @@ Removed 5 rows containing missing values or values outside the scale range
 <pre><code>[1] 0.0410095 0.1457715 0.0856926</code></pre>
 </div>
 </div></div>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-</section>
 </section>
      </main>
 <!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
@@ -1969,7 +1973,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","loop":false,"openEffect":"zoom"});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"openEffect":"zoom","selector":".lightbox","closeEffect":"zoom","loop":false,"descPosition":"bottom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
