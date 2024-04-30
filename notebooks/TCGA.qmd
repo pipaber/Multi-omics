@@ -222,7 +222,7 @@ head(var_class_df)
 
 We can visualize the most common mutated genes genes in rectum adenocarcinoma
 
-```{r}
+```{r results='asis'}
 #| label: fig-genesmut
 
 p <- var_class_df |> 
@@ -242,7 +242,7 @@ p <- var_class_df |>
        title="Top 20 Samples with Rectum Adenocarcinoma Mutation")
 
 
-p
+print(p)
 
 ```
 
