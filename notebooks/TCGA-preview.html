@@ -207,6 +207,8 @@
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#download-the-data" id="toc-download-the-data" class="nav-link" data-scroll-target="#download-the-data">Download the Data</a></li>
+  <li><a href="#review-the-clinical-metadata" id="toc-review-the-clinical-metadata" class="nav-link" data-scroll-target="#review-the-clinical-metadata">Review the Clinical Metadata</a></li>
+  <li><a href="#analyzing-mutation-data" id="toc-analyzing-mutation-data" class="nav-link" data-scroll-target="#analyzing-mutation-data">Analyzing Mutation Data</a></li>
   </ul>
 </nav>
 </div>
@@ -653,6 +655,9 @@ Functionality:
  exportClass() - save data to flat files</code></pre>
 </div>
 </div></div>
+</section>
+<section id="review-the-clinical-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="review-the-clinical-metadata">Review the Clinical Metadata</h2>
 <p>We can see which patients have data for each assay. The assay column gives the experiment type, the primary column gives the unique patient ID and the colname gives the sample ID used as a identifier within a given experiment.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [4]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sampleMap</span>(readData)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -751,6 +756,426 @@ Functionality:
   t4  9  5</code></pre>
 </div>
 </div></div>
+</section>
+<section id="analyzing-mutation-data" class="level2">
+<h2 class="anchored" data-anchor-id="analyzing-mutation-data">Analyzing Mutation Data</h2>
+<p>Let’s begin analyzing the mutation data. Below is the code to retrieve the mutation data.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [11]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>mut_data <span class="ot">=</span> readData[[<span class="dv">1</span>]]</span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>mut_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class: RaggedExperiment 
+dim: 22075 69 
+assays(34): Hugo_Symbol Entrez_Gene_Id ... COSMIC_Gene Drug_Target
+rownames: NULL
+colnames(69): TCGA-AF-2689-01A-01W-0831-10 TCGA-AF-2691-01A-01W-0831-10
+  ... TCGA-AG-A032-01 TCGA-AG-A036-01
+colData names(0):</code></pre>
+</div>
+</div></div>
+<p>From the inspection of the sample IDs we can see that the mutation colnames match to the <strong>primary</strong> column from he clinical data.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [12]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>mut_sample_ids <span class="ot">=</span> <span class="fu">colnames</span>(mut_data)</span>
+<span id="cb126-2"><a href="#cb126-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mut_sample_ids)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "TCGA-AF-2689-01A-01W-0831-10" "TCGA-AF-2691-01A-01W-0831-10"
+[3] "TCGA-AF-2692-01A-01W-0831-10" "TCGA-AF-3400-01A-01W-0831-10"
+[5] "TCGA-AF-3913-01"              "TCGA-AG-3574-01A-01W-0831-10"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(clin<span class="sc">$</span>patientID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "TCGA-AF-2687" "TCGA-AF-2689" "TCGA-AF-2690" "TCGA-AF-2691" "TCGA-AF-2692"
+[6] "TCGA-AF-2693"</code></pre>
+</div>
+</div></div>
+<p>We need to manipulate these by substracting 12 characters.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [13]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>mut_sample_ids <span class="ot">&lt;-</span> mut_sample_ids <span class="sc">|&gt;</span> </span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>  stringr<span class="sc">::</span><span class="fu">str_sub</span>(<span class="dv">1</span>,<span class="dv">12</span>)</span>
+<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb130-4"><a href="#cb130-4" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(mut_sample_ids <span class="sc">%in%</span> clin<span class="sc">$</span>patientID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div></div>
+<p>Is important to note that the data stored in <code>assay(mut_data)</code> is difficult to work with because is a sparse matrix that has a row for each <code>GRanges</code> with a mutation in at least one sample.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [14]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(mut_data)[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                      TCGA-AF-2689-01A-01W-0831-10 TCGA-AF-2691-01A-01W-0831-10
+X:54241715-54241716:+ "WNK3"                       NA                          
+7:111899511:+         "IFRD1"                      NA                          
+7:113309556:+         "PPP1R3A"                    NA                          
+                      TCGA-AF-2692-01A-01W-0831-10
+X:54241715-54241716:+ NA                          
+7:111899511:+         NA                          
+7:113309556:+         NA                          </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb134"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Is a sparse matrix</span></span>
+<span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb134-3"><a href="#cb134-3" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(mut_data)[<span class="dv">1</span>,] <span class="sc">|&gt;</span> </span>
+<span id="cb134-4"><a href="#cb134-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(<span class="at">useNA=</span><span class="st">"ifany"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+WNK3 &lt;NA&gt; 
+   1   68 </code></pre>
+</div>
+</div></div>
+<p>We can get more information if we look at the mutation information for each patient.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [15]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb136"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a>mut_assay <span class="ot">=</span> mut_data<span class="sc">@</span>assays</span>
+<span id="cb136-2"><a href="#cb136-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb136-3"><a href="#cb136-3" aria-hidden="true" tabindex="-1"></a>mut_assay <span class="co"># GRangesList</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GRangesList object of length 69:
+$`TCGA-AF-2689-01A-01W-0831-10`
+GRanges object with 64 ranges and 34 metadata columns:
+       seqnames            ranges strand | Hugo_Symbol Entrez_Gene_Id
+          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;    &lt;character&gt;
+   [1]        X 54241715-54241716      + |        WNK3          65267
+   [2]        7         111899511      + |       IFRD1           3475
+   [3]        7         113309556      + |     PPP1R3A           5506
+   [4]        7         128146325      + |     FAM71F1          84691
+   [5]        7         156447624      + |        NOM1          64434
+   ...      ...               ...    ... .         ...            ...
+  [60]       10          50616059      + |       OGDHL          55753
+  [61]       10          96343335      + |       HELLS           3070
+  [62]        5         139173166      + |        PSD2          84249
+  [63]        5         147800932      + |      FBXO38          81545
+  [64]        5          54365356      + |        GZMK           3003
+             Center  NCBI_Build Variant_Classification Variant_Type
+        &lt;character&gt; &lt;character&gt;            &lt;character&gt;  &lt;character&gt;
+   [1] hgsc.bcm.edu          36        Frame_Shift_Ins          INS
+   [2] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [3] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [4] hgsc.bcm.edu          36                 Silent          SNP
+   [5] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   ...          ...         ...                    ...          ...
+  [60] hgsc.bcm.edu          36                 Silent          SNP
+  [61] hgsc.bcm.edu          36                 Silent          SNP
+  [62] hgsc.bcm.edu          36      Nonsense_Mutation          SNP
+  [63] hgsc.bcm.edu          36                 Silent          SNP
+  [64] hgsc.bcm.edu          36      Missense_Mutation          SNP
+       Reference_Allele Tumor_Seq_Allele1 Tumor_Seq_Allele2    dbSNP_RS
+            &lt;character&gt;       &lt;character&gt;       &lt;character&gt; &lt;character&gt;
+   [1]                -                 -                 T       novel
+   [2]                A                 A                 G       novel
+   [3]                T                 T                 C       novel
+   [4]                G                 G                 A       novel
+   [5]                A                 A                 G       novel
+   ...              ...               ...               ...         ...
+  [60]                G                 G                 A       novel
+  [61]                T                 T                 C       novel
+  [62]                C                 C                 T       novel
+  [63]                G                 G                 A       novel
+  [64]                T                 T                 A       novel
+       dbSNP_Val_Status Matched_Norm_Sample_Barcode Match_Norm_Seq_Allele1
+            &lt;character&gt;                 &lt;character&gt;            &lt;character&gt;
+   [1]          unknown      TCGA-AF-2689-10A-01W..                      -
+   [2]          unknown      TCGA-AF-2689-10A-01W..                      A
+   [3]          unknown      TCGA-AF-2689-10A-01W..                      T
+   [4]          unknown      TCGA-AF-2689-10A-01W..                      G
+   [5]          unknown      TCGA-AF-2689-10A-01W..                      A
+   ...              ...                         ...                    ...
+  [60]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [61]          unknown      TCGA-AF-2689-10A-01W..                      T
+  [62]          unknown      TCGA-AF-2689-10A-01W..                      C
+  [63]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [64]          unknown      TCGA-AF-2689-10A-01W..                      T
+       Match_Norm_Seq_Allele2 Tumor_Validation_Allele1 Tumor_Validation_Allele2
+                  &lt;character&gt;              &lt;character&gt;              &lt;character&gt;
+   [1]                      -                        -                        T
+   [2]                      A                        A                        G
+   [3]                      T                        T                        C
+   [4]                      G                        .                        .
+   [5]                      A                        A                        G
+   ...                    ...                      ...                      ...
+  [60]                      G                        .                        .
+  [61]                      T                        .                        .
+  [62]                      C                        C                        T
+  [63]                      G                        G                        A
+  [64]                      T                        T                        A
+       Match_Norm_Validation_Allele1 Match_Norm_Validation_Allele2
+                         &lt;character&gt;                   &lt;character&gt;
+   [1]                             -                             -
+   [2]                             A                             A
+   [3]                             T                             T
+   [4]                             .                             .
+   [5]                             A                             A
+   ...                           ...                           ...
+  [60]                             .                             .
+  [61]                             .                             .
+  [62]                             C                             C
+  [63]                             G                             G
+  [64]                             T                             T
+       Verification_Status Validation_Status Mutation_Status Sequencing_Phase
+               &lt;character&gt;       &lt;character&gt;     &lt;character&gt;      &lt;character&gt;
+   [1]             Unknown             Valid         Somatic          Phase_I
+   [2]             Unknown             Valid         Somatic          Phase_I
+   [3]             Unknown             Valid         Somatic          Phase_I
+   [4]             Unknown           Unknown         Somatic          Phase_I
+   [5]             Unknown             Valid         Somatic          Phase_I
+   ...                 ...               ...             ...              ...
+  [60]             Unknown           Unknown         Somatic          Phase_I
+  [61]             Unknown           Unknown         Somatic          Phase_I
+  [62]             Unknown             Valid         Somatic          Phase_I
+  [63]             Unknown             Valid         Somatic          Phase_I
+  [64]             Unknown             Valid         Somatic          Phase_I
+       Sequence_Source Validation_Method       Score    BAM_file   Sequencer
+           &lt;character&gt;       &lt;character&gt; &lt;character&gt; &lt;character&gt; &lt;character&gt;
+   [1]         Capture               454                               SOLID
+   [2]         Capture               454                               SOLID
+   [3]         Capture               454                               SOLID
+   [4]         Capture                 .                               SOLID
+   [5]         Capture               454                               SOLID
+   ...             ...               ...         ...         ...         ...
+  [60]         Capture                 .                               SOLID
+  [61]         Capture                 .                               SOLID
+  [62]         Capture               454                               SOLID
+  [63]         Capture               454                               SOLID
+  [64]         Capture               454                               SOLID
+       TranscriptID        Exon     ChromChange    AAChange COSMIC_Codon
+        &lt;character&gt; &lt;character&gt;     &lt;character&gt; &lt;character&gt;  &lt;character&gt;
+   [1] NM_001002838      exon23 c.4999_5000insA   p.L1667fs            .
+   [2]    NM_001550      exon10        c.A1043G     p.E348G            .
+   [3]    NM_002711       exon2         c.A838G     p.T280A            .
+   [4]    NM_032599       exon3         c.G639A     p.T213T            .
+   [5]    NM_138400       exon5        c.A1651G     p.T551A            .
+   ...          ...         ...             ...         ...          ...
+  [60] NM_001143996      exon18        c.C2286T     p.S762S            .
+  [61]    NM_018063      exon18        c.T2061C     p.D687D            .
+  [62]    NM_032289       exon3         c.C460T     p.Q154X            .
+  [63]    NM_205836      exon21        c.G3327A    p.R1109R            .
+  [64]    NM_002104       exon5         c.T640A     p.S214T            .
+       COSMIC_Gene Drug_Target
+       &lt;character&gt; &lt;character&gt;
+   [1]           .           .
+   [2]           .           .
+   [3]           .           .
+   [4]           .           .
+   [5]           .           .
+   ...         ...         ...
+  [60]           .           .
+  [61]           .           .
+  [62]           .           .
+  [63]           .           .
+  [64]           .           .
+  -------
+  seqinfo: 24 sequences from NCBI36 genome; no seqlengths
+
+...
+&lt;68 more elements&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb138"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a>mut_assay <span class="sc">|&gt;</span> <span class="fu">class</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CompressedGRangesList"
+attr(,"package")
+[1] "GenomicRanges"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb140"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(mut_assay)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 69</code></pre>
+</div>
+</div></div>
+<p>Let’s inspect the data from the first patient. We can see from the metadata information the Hugo Symbol, mutation status and predicted effect of each mutation at variant classification.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [16]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb142"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GRanges object with 64 ranges and 34 metadata columns:
+       seqnames            ranges strand | Hugo_Symbol Entrez_Gene_Id
+          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;    &lt;character&gt;
+   [1]        X 54241715-54241716      + |        WNK3          65267
+   [2]        7         111899511      + |       IFRD1           3475
+   [3]        7         113309556      + |     PPP1R3A           5506
+   [4]        7         128146325      + |     FAM71F1          84691
+   [5]        7         156447624      + |        NOM1          64434
+   ...      ...               ...    ... .         ...            ...
+  [60]       10          50616059      + |       OGDHL          55753
+  [61]       10          96343335      + |       HELLS           3070
+  [62]        5         139173166      + |        PSD2          84249
+  [63]        5         147800932      + |      FBXO38          81545
+  [64]        5          54365356      + |        GZMK           3003
+             Center  NCBI_Build Variant_Classification Variant_Type
+        &lt;character&gt; &lt;character&gt;            &lt;character&gt;  &lt;character&gt;
+   [1] hgsc.bcm.edu          36        Frame_Shift_Ins          INS
+   [2] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [3] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   [4] hgsc.bcm.edu          36                 Silent          SNP
+   [5] hgsc.bcm.edu          36      Missense_Mutation          SNP
+   ...          ...         ...                    ...          ...
+  [60] hgsc.bcm.edu          36                 Silent          SNP
+  [61] hgsc.bcm.edu          36                 Silent          SNP
+  [62] hgsc.bcm.edu          36      Nonsense_Mutation          SNP
+  [63] hgsc.bcm.edu          36                 Silent          SNP
+  [64] hgsc.bcm.edu          36      Missense_Mutation          SNP
+       Reference_Allele Tumor_Seq_Allele1 Tumor_Seq_Allele2    dbSNP_RS
+            &lt;character&gt;       &lt;character&gt;       &lt;character&gt; &lt;character&gt;
+   [1]                -                 -                 T       novel
+   [2]                A                 A                 G       novel
+   [3]                T                 T                 C       novel
+   [4]                G                 G                 A       novel
+   [5]                A                 A                 G       novel
+   ...              ...               ...               ...         ...
+  [60]                G                 G                 A       novel
+  [61]                T                 T                 C       novel
+  [62]                C                 C                 T       novel
+  [63]                G                 G                 A       novel
+  [64]                T                 T                 A       novel
+       dbSNP_Val_Status Matched_Norm_Sample_Barcode Match_Norm_Seq_Allele1
+            &lt;character&gt;                 &lt;character&gt;            &lt;character&gt;
+   [1]          unknown      TCGA-AF-2689-10A-01W..                      -
+   [2]          unknown      TCGA-AF-2689-10A-01W..                      A
+   [3]          unknown      TCGA-AF-2689-10A-01W..                      T
+   [4]          unknown      TCGA-AF-2689-10A-01W..                      G
+   [5]          unknown      TCGA-AF-2689-10A-01W..                      A
+   ...              ...                         ...                    ...
+  [60]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [61]          unknown      TCGA-AF-2689-10A-01W..                      T
+  [62]          unknown      TCGA-AF-2689-10A-01W..                      C
+  [63]          unknown      TCGA-AF-2689-10A-01W..                      G
+  [64]          unknown      TCGA-AF-2689-10A-01W..                      T
+       Match_Norm_Seq_Allele2 Tumor_Validation_Allele1 Tumor_Validation_Allele2
+                  &lt;character&gt;              &lt;character&gt;              &lt;character&gt;
+   [1]                      -                        -                        T
+   [2]                      A                        A                        G
+   [3]                      T                        T                        C
+   [4]                      G                        .                        .
+   [5]                      A                        A                        G
+   ...                    ...                      ...                      ...
+  [60]                      G                        .                        .
+  [61]                      T                        .                        .
+  [62]                      C                        C                        T
+  [63]                      G                        G                        A
+  [64]                      T                        T                        A
+       Match_Norm_Validation_Allele1 Match_Norm_Validation_Allele2
+                         &lt;character&gt;                   &lt;character&gt;
+   [1]                             -                             -
+   [2]                             A                             A
+   [3]                             T                             T
+   [4]                             .                             .
+   [5]                             A                             A
+   ...                           ...                           ...
+  [60]                             .                             .
+  [61]                             .                             .
+  [62]                             C                             C
+  [63]                             G                             G
+  [64]                             T                             T
+       Verification_Status Validation_Status Mutation_Status Sequencing_Phase
+               &lt;character&gt;       &lt;character&gt;     &lt;character&gt;      &lt;character&gt;
+   [1]             Unknown             Valid         Somatic          Phase_I
+   [2]             Unknown             Valid         Somatic          Phase_I
+   [3]             Unknown             Valid         Somatic          Phase_I
+   [4]             Unknown           Unknown         Somatic          Phase_I
+   [5]             Unknown             Valid         Somatic          Phase_I
+   ...                 ...               ...             ...              ...
+  [60]             Unknown           Unknown         Somatic          Phase_I
+  [61]             Unknown           Unknown         Somatic          Phase_I
+  [62]             Unknown             Valid         Somatic          Phase_I
+  [63]             Unknown             Valid         Somatic          Phase_I
+  [64]             Unknown             Valid         Somatic          Phase_I
+       Sequence_Source Validation_Method       Score    BAM_file   Sequencer
+           &lt;character&gt;       &lt;character&gt; &lt;character&gt; &lt;character&gt; &lt;character&gt;
+   [1]         Capture               454                               SOLID
+   [2]         Capture               454                               SOLID
+   [3]         Capture               454                               SOLID
+   [4]         Capture                 .                               SOLID
+   [5]         Capture               454                               SOLID
+   ...             ...               ...         ...         ...         ...
+  [60]         Capture                 .                               SOLID
+  [61]         Capture                 .                               SOLID
+  [62]         Capture               454                               SOLID
+  [63]         Capture               454                               SOLID
+  [64]         Capture               454                               SOLID
+       TranscriptID        Exon     ChromChange    AAChange COSMIC_Codon
+        &lt;character&gt; &lt;character&gt;     &lt;character&gt; &lt;character&gt;  &lt;character&gt;
+   [1] NM_001002838      exon23 c.4999_5000insA   p.L1667fs            .
+   [2]    NM_001550      exon10        c.A1043G     p.E348G            .
+   [3]    NM_002711       exon2         c.A838G     p.T280A            .
+   [4]    NM_032599       exon3         c.G639A     p.T213T            .
+   [5]    NM_138400       exon5        c.A1651G     p.T551A            .
+   ...          ...         ...             ...         ...          ...
+  [60] NM_001143996      exon18        c.C2286T     p.S762S            .
+  [61]    NM_018063      exon18        c.T2061C     p.D687D            .
+  [62]    NM_032289       exon3         c.C460T     p.Q154X            .
+  [63]    NM_205836      exon21        c.G3327A    p.R1109R            .
+  [64]    NM_002104       exon5         c.T640A     p.S214T            .
+       COSMIC_Gene Drug_Target
+       &lt;character&gt; &lt;character&gt;
+   [1]           .           .
+   [2]           .           .
+   [3]           .           .
+   [4]           .           .
+   [5]           .           .
+   ...         ...         ...
+  [60]           .           .
+  [61]           .           .
+  [62]           .           .
+  [63]           .           .
+  [64]           .           .
+  -------
+  seqinfo: 24 sequences from NCBI36 genome; no seqlengths</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb144"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a href="#cb144-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]<span class="sc">$</span>Hugo_Symbol</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "WNK3"     "IFRD1"    "PPP1R3A"  "FAM71F1"  "NOM1"     "TRIM73"  
+ [7] "C7orf51"  "DIDO1"    "DNMT1"    "CALR"     "SIN3B"    "ZNF569"  
+[13] "SIGLEC12" "ZNF160"   "NLRP4"    "ENPP2"    "TRPA1"    "MMP16"   
+[19] "GPR89A"   "SLC9A11"  "PAX7"     "PLA2G5"   "SLC26A9"  "PIK3R3"  
+[25] "LPPR4"    "BCL9L"    "PRDM11"   "PEX3"     "DCDC2"    "KRT20"   
+[31] "TP53"     "CDH8"     "SF3B3"    "SLC9A10"  "SLC7A14"  "NLGN1"   
+[37] "MYRIP"    "CYP8B1"   "TGM4"     "COL7A1"   "P2RX7"    "KRAS"    
+[43] "TPH2"     "ANO4"     "UBR1"     "LBXCOR1"  "PDLIM5"   "ODZ1"    
+[49] "SMARCA1"  "CNKSR2"   "RBM10"    "RBM3"     "HUWE1"    "CYLC1"   
+[55] "ATP6V1E2" "ASTN2"    "TAF1L"    "SGCG"     "GBF1"     "OGDHL"   
+[61] "HELLS"    "PSD2"     "FBXO38"   "GZMK"    </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb146"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]<span class="sc">$</span>Mutation_Status <span class="sc">|&gt;</span> </span>
+<span id="cb146-2"><a href="#cb146-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Somatic 
+     64 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb148"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a>mut_assay[[<span class="dv">1</span>]]<span class="sc">$</span>Variant_Classification <span class="sc">|&gt;</span> </span>
+<span id="cb148-2"><a href="#cb148-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  Frame_Shift_Ins Missense_Mutation Nonsense_Mutation            Silent 
+                1                39                 5                19 </code></pre>
+</div>
+</div></div>
+<p>Now, is kind of a trouble to inspect manually each patient. So, lets get all mutation information from Hugo symbol and Variant classification for all the patients.</p>
+<div class="cell-container"><div class="cell-decorator"><pre>In [17]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb150"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>var_class_df <span class="ot">=</span> <span class="fu">mapply</span>(<span class="cf">function</span>(sample_id, mutation_assay){</span>
+<span id="cb150-2"><a href="#cb150-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-3"><a href="#cb150-3" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">=</span> <span class="fu">mcols</span>(mutation_assay)[,<span class="fu">c</span>(<span class="st">"Hugo_Symbol"</span>,<span class="st">"Variant_Classification"</span>)] <span class="sc">|&gt;</span> </span>
+<span id="cb150-4"><a href="#cb150-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>()</span>
+<span id="cb150-5"><a href="#cb150-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-6"><a href="#cb150-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(d) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"symbol"</span>,<span class="st">"variant_class"</span>)</span>
+<span id="cb150-7"><a href="#cb150-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-8"><a href="#cb150-8" aria-hidden="true" tabindex="-1"></a>  d<span class="sc">$</span>patientID <span class="ot">=</span> sample_id</span>
+<span id="cb150-9"><a href="#cb150-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-10"><a href="#cb150-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d)</span>
+<span id="cb150-11"><a href="#cb150-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb150-12"><a href="#cb150-12" aria-hidden="true" tabindex="-1"></a>}, <span class="at">sample_id=</span>mut_sample_ids, <span class="at">mutation_assay =</span> mut_assay,<span class="at">SIMPLIFY =</span> F, <span class="at">USE.NAMES =</span> F)</span>
+<span id="cb150-13"><a href="#cb150-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-14"><a href="#cb150-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-15"><a href="#cb150-15" aria-hidden="true" tabindex="-1"></a>var_class_df <span class="ot">=</span> <span class="fu">do.call</span>(rbind, var_class_df)</span>
+<span id="cb150-16"><a href="#cb150-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-17"><a href="#cb150-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-18"><a href="#cb150-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(var_class_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   symbol     variant_class    patientID
+1    WNK3   Frame_Shift_Ins TCGA-AF-2689
+2   IFRD1 Missense_Mutation TCGA-AF-2689
+3 PPP1R3A Missense_Mutation TCGA-AF-2689
+4 FAM71F1            Silent TCGA-AF-2689
+5    NOM1 Missense_Mutation TCGA-AF-2689
+6  TRIM73 Nonsense_Mutation TCGA-AF-2689</code></pre>
+</div>
+</div></div>
+<p>We can visualize the most common mutated genes genes in rectum adenocarcinoma</p>
 </section>
      </main>
 <!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
