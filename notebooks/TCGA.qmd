@@ -58,6 +58,8 @@ readData = curatedTCGAData("READ",
 readData # this is a MultiAssayExperiment object
 ```
 
+## Review the Clinical Metadata
+
 We can see which patients have data for each assay. The assay column gives the experiment type, the primary column gives the unique patient ID and the colname gives the sample ID used as a identifier within a given experiment.
 
 ```{r}
@@ -123,4 +125,99 @@ Or combine tumor status and vital status.
 table(clin$t_stage, clin$vital_status)
 ```
 
+## Analyzing Mutation Data
 
+Let's begin analyzing the mutation data. Below is the code to retrieve the mutation data.
+
+```{r}
+mut_data = readData[[1]]
+
+mut_data
+```
+
+From the inspection of the sample IDs we can see that the mutation colnames match to the **primary** column from he clinical data.
+
+```{r}
+mut_sample_ids = colnames(mut_data)
+head(mut_sample_ids)
+
+head(clin$patientID)
+
+```
+
+We need to manipulate these by substracting 12 characters.
+
+```{r}
+
+mut_sample_ids <- mut_sample_ids |> 
+  stringr::str_sub(1,12)
+
+all(mut_sample_ids %in% clin$patientID)
+
+```
+
+Is important to note that the data stored in `assay(mut_data)` is difficult to work with because is a sparse matrix that has a row for each `GRanges` with a mutation in at least one sample.
+
+```{r}
+assay(mut_data)[1:3,1:3]
+
+# Is a sparse matrix
+
+assay(mut_data)[1,] |> 
+  table(useNA="ifany")
+
+```
+
+We can get more information if we look at the mutation information for each patient.
+
+```{r}
+mut_assay = mut_data@assays
+
+mut_assay # GRangesList
+
+mut_assay |> class()
+
+length(mut_assay)
+```
+
+Let's inspect the data from the first patient. We can see from the metadata information the Hugo Symbol, mutation status and predicted effect of each mutation at variant classification.
+
+```{r}
+mut_assay[[1]]
+
+mut_assay[[1]]$Hugo_Symbol
+
+mut_assay[[1]]$Mutation_Status |> 
+  table()
+
+mut_assay[[1]]$Variant_Classification |> 
+  table()
+
+```
+
+Now, is kind of a trouble to inspect manually each patient. So, lets get all mutation information from Hugo symbol and Variant classification for all the patients.
+
+```{r}
+
+var_class_df = mapply(function(sample_id, mutation_assay){
+  
+  d = mcols(mutation_assay)[,c("Hugo_Symbol","Variant_Classification")] |> 
+    as.data.frame()
+  
+  colnames(d) = c("symbol","variant_class")
+  
+  d$patientID = sample_id
+  
+  return(d)
+  
+}, sample_id=mut_sample_ids, mutation_assay = mut_assay,SIMPLIFY = F, USE.NAMES = F)
+
+
+var_class_df = do.call(rbind, var_class_df)
+
+
+head(var_class_df)
+
+```
+
+We can visualize the most common mutated genes genes in rectum adenocarcinoma
