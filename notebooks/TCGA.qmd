@@ -1,6 +1,6 @@
 ---
 title: "Integrative Analysis with TCGA Data"
-subtitle: "Analysis of Mutation Data from The Cancer Genome Atlas (TCGA)"
+subtitle: "Analysis of Mutation, Transcription and Methylation Data from The Cancer Genome Atlas (TCGA)"
 format: html
 editor: visual
 ---
@@ -247,8 +247,7 @@ ggsave(paste0(path,"samples_with_mut.jpeg"), device = "jpeg")
 
 ```
 
-![Samples with specific mutation per gene](images/samples_with_mut.jpeg)
-## Linking mutations and tumor stage
+![Samples with specific mutation per gene](images/samples_with_mut.jpeg) \## Linking mutations and tumor stage
 
 Now that we are familiarized with the mutation data, we can link mutations to the tumor stage from the patients with rectum adenocarcinoma.
 
@@ -327,6 +326,7 @@ rnaseq = readData[[2]]
 rnaseq
 
 ```
+
 As before, we need to shorten the sample IDs so they can match to the clinical data.
 
 ```{r}
@@ -348,7 +348,7 @@ rnaseq <- rnaseq[,!idx]
 
 ```
 
-Then, we can use the `limma` package to proceed with the differential expression analysis. In this case, we'll ise the tumor stage as a variable to explain the expression of the genes. 
+Then, we can use the `limma` package to proceed with the differential expression analysis. In this case, we'll ise the tumor stage as a variable to explain the expression of the genes.
 
 ```{r}
 
@@ -462,4 +462,3 @@ me_rna_cor = function(sym, mpick = 3){
 me_rna_cor("TAC1", mpick=3)
 
 ```
-
