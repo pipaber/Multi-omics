@@ -1,8 +1,6 @@
 ---
 title: "Analyzing Cloud Data from ENCODE"
 subtitle: "The Encyclopedia of DNA Element (ENCODE)"
-format: html
-editor: visual
 ---
 
 # Introduction
@@ -13,6 +11,3 @@ We will use Bioconductor to acquire and interpret ENCODE resources. In particula
 
 # ENCODE ChIP-seq Data
 
-```{r}
-
-```
