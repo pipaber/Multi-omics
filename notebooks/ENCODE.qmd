@@ -3,4 +3,10 @@ title: "ENCODE Data Analysis"
 editor: visual
 ---
 
-Hola
+## Introduction
+
+The Encyclopedia of DNA Elements (ENCODE) is a collection of experimental results (from human, mouse, worm and fly) and computing resources devoted to elaborating the mechanisms of gene regulation. The [ENCODE webpage](https://www.encodeproject.org/) provides a good overview of the project scope involving dozens of biotechnological innovations that are used to analyze gene structure and regulation.
+
+We will analyze data from ChIP-Seq, ATAC-Seq and CRISPR interference RNA-Seq experiments to show how to use ENCODE with R.
+
+## ChIP-Seq 
